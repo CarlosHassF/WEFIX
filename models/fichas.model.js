@@ -27,3 +27,8 @@ export async function alteraStatusFicha(status, id_manutencao){
     const valores = [status, id_manutencao];
     return db.query(sql, valores);
 }
+
+export async function deletaFicha(id_manutencao){
+    const sql = "DELETE FROM fichas WHERE id_manutencao = $1";
+    return db.query(sql,[id_manutencao]);
+}
