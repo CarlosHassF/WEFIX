@@ -36,3 +36,19 @@ export async function criaFicha(req, res){
         res.status(500).send("Algo deu errado..");
     }
 }
+
+export async function alteraStatus(req, res){
+    try{
+        const {id_manutencao, status} = req.body;
+
+        if(!id_manutencao){
+            return res.status(400).send("Dados obrigatorios faltando!");
+        }
+        await fichasModel.alteraStatusFicha(status, id_manutencao);
+        res.status(200).send("Ficha alterada com sucesso");
+
+    }catch(e){
+        console.log(e);
+        res.status(500).send("Algo deu errado");
+    }
+}
