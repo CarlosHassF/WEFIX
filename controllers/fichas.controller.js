@@ -24,13 +24,13 @@ export async function listarFichasStatus(req, res){
 export async function criaFicha(req, res){
     try{
 
-        const {id_manutencao,nome_cliente, valor_servico, numero_cliente, observacao} = req.body;
+        const {nome_cliente, valor_servico, numero_cliente, observacao} = req.body;
 
         if(!nome_cliente || !valor_servico || !numero_cliente){
             return res.status(400).send("Dados obrigatorios faltando!");
         }
-        await fichasModel.criaNovaFicha(id_manutencao,nome_cliente, valor_servico, numero_cliente, observacao);
-        res.status(201).send("Ficha criada com sucesso, o numero da ficha é #" + id_manutencao);
+        await fichasModel.criaNovaFicha(nome_cliente, valor_servico, numero_cliente, observacao);
+        res.status(201).send("Ficha criada com sucesso");
     }catch(e){
         console.log(e);
         res.status(500).send("Algo deu errado..");

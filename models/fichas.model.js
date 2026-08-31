@@ -14,9 +14,9 @@ export async function buscarFichaPorStatus(status){
     return consulta.rows;
 }
 
-export async function criaNovaFicha(id_manutencao,nome_cliente, valor_servico, numero_cliente, observacao){
-    const sql = "INSERT INTO fichas(id_manutencao,nome_cliente, valor_servico, numero_cliente, observacao) VALUES ($1, $2, $3, $4,$5)";
-    const valores = [id_manutencao, nome_cliente, valor_servico, numero_cliente, observacao];
+export async function criaNovaFicha(nome_cliente, valor_servico, numero_cliente, observacao){
+    const sql = "INSERT INTO fichas(nome_cliente, valor_servico, numero_cliente, observacao) VALUES ($1, $2, $3, $4)";
+    const valores = [nome_cliente, valor_servico, numero_cliente, observacao];
 
     return db.query(sql, valores)
 
