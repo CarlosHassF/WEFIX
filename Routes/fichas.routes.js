@@ -11,5 +11,5 @@ router.get('/status/:status', FichasController.listarFichasStatus);
 router.post('/', FichasController.criaFicha);
 router.patch('/', FichasController.alteraStatus);
 router.delete('/:id_manutencao', FichasController.deletaFicha);
-router.put('/', FichasController.alteraFicha);
+router.put('/:id_manutencao', FichasController.alteraFicha);
 export default router;

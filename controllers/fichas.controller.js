@@ -29,8 +29,10 @@ export async function criaFicha(req, res){
         if(!nome_cliente || !valor_servico || !numero_cliente){
             return res.status(400).send("Dados obrigatorios faltando!");
         }
-        await fichasModel.criaNovaFicha(nome_cliente, valor_servico, numero_cliente, observacao);
-        res.status(201).send("Ficha criada com sucesso");
+
+        const dados = {nome_cliente, valor_servico, numero_cliente, observacao};
+        const ficha = await fichasModel.criaNovaFicha(dados);
+        res.status(201).send("Ficha criada com sucesso o id da ficha é #"+ficha.id_manutencao);
     }catch(e){
         console.log(e);
         res.status(500).send("Algo deu errado..");
@@ -66,27 +68,16 @@ export async function deletaFicha(req, res){
 
 export async function alteraFicha(req, res){
     try{
-        const {id_manutencao,nome_cliente, valor_servico, numero_cliente, observacao} = req.body;
+        const id_manutencao = req.params.id_manutencao;
+        const {nome_cliente, valor_servico, numero_cliente, observacao} = req.body;
 
         if(!id_manutencao){
             return res.status(400).send("Ficha não encontrada");
         }
 
-        if(nome_cliente){
-            await fichasModel.alteraNomeFicha(id_manutencao,nome_cliente);
-        }
+        const dados = {nome_cliente, valor_servico, numero_cliente, observacao};
 
-        if(valor_servico){
-            await fichasModel.alteraValorFicha(id_manutencao, valor_servico);
-        }
-
-        if(numero_cliente){
-            await fichasModel.alteraNumeroFicha(id_manutencao, numero_cliente);
-        }
-
-        if(observacao){
-            await fichasModel.alteraObservacao(id_manutencao, observacao);
-        }
+        await fichasModel.alteraFichaModel(BigInt(id_manutencao), dados);
         return res.status(200).send("Ficha alterada com sucesso");
     }catch(e){
         console.log(e);
