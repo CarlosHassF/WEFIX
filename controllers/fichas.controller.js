@@ -30,7 +30,7 @@ export async function criaFicha(req, res){
             return res.status(400).send("Dados obrigatorios faltando!");
         }
         await fichasModel.criaNovaFicha(id_manutencao,nome_cliente, valor_servico, numero_cliente, observacao);
-        res.status(201).send("Ficha criada com sucesso numero da ficha é #" + id_manutencao);
+        res.status(201).send("Ficha criada com sucesso, o numero da ficha é #" + id_manutencao);
     }catch(e){
         console.log(e);
         res.status(500).send("Algo deu errado..");
@@ -63,3 +63,34 @@ export async function deletaFicha(req, res){
         res.status(500).send("algo deu errado");
     }
 }
+
+export async function alteraFicha(req, res){
+    try{
+        const {id_manutencao,nome_cliente, valor_servico, numero_cliente, observacao} = req.body;
+
+        if(!id_manutencao){
+            return res.status(400).send("Ficha não encontrada");
+        }
+
+        if(nome_cliente){
+            await fichasModel.alteraNomeFicha(id_manutencao,nome_cliente);
+        }
+
+        if(valor_servico){
+            await fichasModel.alteraValorFicha(id_manutencao, valor_servico);
+        }
+
+        if(numero_cliente){
+            await fichasModel.alteraNumeroFicha(id_manutencao, numero_cliente);
+        }
+
+        if(observacao){
+            await fichasModel.alteraObservacao(id_manutencao, observacao);
+        }
+        return res.status(200).send("Ficha alterada com sucesso");
+    }catch(e){
+        console.log(e);
+        res.status(500).send("algo deu errado");
+    }
+}
+
