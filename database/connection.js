@@ -1,4 +1,5 @@
-/*import dotenv from 'dotenv';
+/*
+import dotenv from 'dotenv';
 import pg from 'pg';
 
 dotenv.config();
@@ -14,15 +15,23 @@ const db = new Pool({
     connectionTimeoutMillis: 5000
 });
 
-export default db;*/
+export default db;
+*/
 
-import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import dotenv from 'dotenv';
+import pkg from '@prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg'
+import dotenv from 'dotenv'
 
-dotenv.config();
+const { PrismaClient } = pkg;
 
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
-const prisma = new PrismaClient({ adapter });
+dotenv.config() // carrega .env
 
-export default prisma;
+// conecta o Prisma ao driver PostgreSQL
+// DATABASE_URL indica o server, port, user, password e database
+const adapter = new PrismaPg({ connectionString: process.env.DB_URL })
+
+// Client oferece metodos de ORM conectando ao banco
+// metodos: create, findMany, update, delete, etc.
+const prisma = new PrismaClient({ adapter })
+
+export default prisma // exporta o PrismaCLient

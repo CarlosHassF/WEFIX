@@ -1,0 +1,11 @@
+build
+coverage
+**/*.html
+**/.git
+**/.svn
+**/.hg
+**/node_modules
+**/.env
+**/.env.example
+**/.agents
+**/.codex

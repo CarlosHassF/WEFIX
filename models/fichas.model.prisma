@@ -1,0 +1,16 @@
+model fichas {
+  id_manutencao  BigInt   @id @default(autoincrement())
+  nome_cliente   String?  @db.VarChar(50)
+  valor_servico  Decimal? @default(50.0) @db.Decimal(10, 2)
+  numero_cliente String?  @db.VarChar(16)
+  observacao     String?  @db.VarChar(400)
+  status         tipos    @default(novo)
+}
+
+enum tipos {
+  novo
+  em_manuten__o @map("em manutenção")
+  entregue
+  cancelado
+  concertado
+}
