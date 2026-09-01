@@ -59,7 +59,7 @@ export async function deletaFicha(req, res){
     try{
         const {id_manutencao} = req.params;
         await fichasModel.deletaFicha(id_manutencao);
-        res.status(200).send("Ficha deletada com sucesso");
+        res.status(204).send();
     }catch(e){
         console.log(e);
         res.status(500).send("algo deu errado");
@@ -84,4 +84,5 @@ export async function alteraFicha(req, res){
         res.status(500).send("algo deu errado");
     }
 }
+
 
