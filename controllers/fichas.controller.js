@@ -63,8 +63,8 @@ export async function alteraStatus(req, res) {
 
 export async function deletaFicha(req, res) {
   try {
-    const { id_manutencao } = BigInt(req.params)
-    await fichasRepository.deletaFicha(id_manutencao)
+    const { id_manutencao } = req.params
+    await fichasRepository.deletaFicha(BigInt(id_manutencao))
     res.status(204).send()
   } catch (e) {
     console.log(e)

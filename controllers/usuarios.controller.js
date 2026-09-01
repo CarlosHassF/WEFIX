@@ -36,11 +36,16 @@ export async function editaUsuario(req, res) {
   try {
     const id_usuario = req.params.id_usuario
     if (!id_usuario) {
-      res.status(400).send('Dados obrigatorios faltando')
+      return res.status(400).send('Dados obrigatorios faltando')
     }
     const { nome_usuario, email_usuario, senha, cargo_usuario } = req.body
 
-    const senha_usuario = await bycrypt.hash(senha, 10)
+    if(senha)
+    {
+        const senha_usuario = await bycrypt.hash(senha, 10)
+    }
+
+    
 
     const dados = {
       nome_usuario,
