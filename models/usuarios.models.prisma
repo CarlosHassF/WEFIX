@@ -1,0 +1,13 @@
+model usuarios {
+  id_usuario    BigInt @id @default(autoincrement())
+  nome_usuario  String @db.VarChar(100)
+  email_usuario String @unique @db.VarChar(100)
+  senha_usuario String @db.VarChar(255)
+  cargo_usuario cargos
+}
+
+enum cargos {
+  atendente
+  admin
+  tecnico
+}
