@@ -9,7 +9,7 @@ export async function buscarTodosUsuariosModel() {
       email_usuario: true,
       cargo_usuario: true,
       senha_usuario: false,
-    }
+    },
   })
 }
 
@@ -28,5 +28,10 @@ export async function editaUsuario(id_usuario, dados) {
 export async function deletaUsuario(id_usuario) {
   return prisma.usuarios.delete({
     where: { id_usuario },
+  })
+}
+export async function buscarEmail(email_usuario) {
+  return prisma.usuarios.findUnique({
+    where: { email_usuario },
   })
 }

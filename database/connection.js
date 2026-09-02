@@ -22,7 +22,7 @@ import pkg from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import dotenv from 'dotenv'
 
-const { PrismaClient } = pkg;
+const { PrismaClient } = pkg
 
 dotenv.config() // carrega .env
 

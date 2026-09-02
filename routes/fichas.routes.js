@@ -1,8 +1,11 @@
 import { Router } from 'express'
 
 import * as FichasController from '../controllers/fichas.controller.js'
+import { validaToken } from '../middlewares/auth.middleware.js'
 
 const router = Router()
+
+router.use(validaToken)
 
 //rotas fichas
 router.get('/', FichasController.listarTodasFichas)

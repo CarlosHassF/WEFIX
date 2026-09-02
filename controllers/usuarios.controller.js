@@ -8,6 +8,8 @@ export async function buscarTodosUsuarios(req, res) {
   } catch (e) {
     console.log(e)
     res.status(500).send({ erro: 'ocorreu um erro inesperado..' })
+
+    console.log(require('crypto').randomBytes(64).toString('hex'))
   }
 }
 
@@ -40,12 +42,9 @@ export async function editaUsuario(req, res) {
     }
     const { nome_usuario, email_usuario, senha, cargo_usuario } = req.body
 
-    if(senha)
-    {
-        const senha_usuario = await bycrypt.hash(senha, 10)
+    if (senha) {
+      const senha_usuario = await bycrypt.hash(senha, 10)
     }
-
-    
 
     const dados = {
       nome_usuario,
@@ -64,7 +63,7 @@ export async function editaUsuario(req, res) {
 
 export async function deletaUsuario(req, res) {
   try {
-    const id_usuario = BigInt(req.params.id_usuario);
+    const id_usuario = BigInt(req.params.id_usuario)
 
     if (!id_usuario) {
       res.status(400).send('Dados obrigatorios faltando')
