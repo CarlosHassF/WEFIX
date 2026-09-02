@@ -21,20 +21,21 @@ export async function login(req, res) {
     if (!senha_usuario) {
       return res.status(401).send({ erro: 'Credenciais invalidas' })
     }
+
+    //gera o token com id, nome e cargo
     const token = jwt.sign(
       {
         id: usuario.id_usuario.toString(),
         nome: usuario.nome_usuario,
         cargo: usuario.cargo_usuario,
+        is_logged: true
       },
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
     )
     res.status(200).send({ token })
   } catch (e) {
-    console.log(e)
+    console.log(token)
     res.status(500).send({ erro: 'ocorreu um erro inesperado..' })
   }
 }
-
-// add logout
