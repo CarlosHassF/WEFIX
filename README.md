@@ -16,4 +16,6 @@ pnpm run dev
 pnpm prettier . --write
 # validacao prettier
 pnpm prettier . --check
+# geração do jwtSecret
+ node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ```
