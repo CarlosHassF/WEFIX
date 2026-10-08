@@ -17,5 +17,13 @@ pnpm prettier . --write
 # validacao prettier
 pnpm prettier . --check
 # geração do jwtSecret
- node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+# criação do db local com prisma e postgres
+pnpm dlx create-db@latest
+# export da string e url de conexao para o .env
+export DATABASE_URL="<the connection string create-db printed>"
+# inicializar o database
+pnpm run db:init
+# inicializar o prototipo em modo dev
+pnpm run dev
 ```
