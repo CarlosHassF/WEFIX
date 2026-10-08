@@ -1,7 +1,9 @@
+// cliente prisma orm
 generator client {
   provider = "prisma-client-js"
 }
 
+// sgbd provedor da aplicacao
 datasource db {
   provider = "postgresql"
 }

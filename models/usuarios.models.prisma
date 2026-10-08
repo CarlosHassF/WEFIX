@@ -1,12 +1,14 @@
-model usuarios {
+// entidade Usuarios 
+model Usuarios {
   id_usuario    BigInt @id @default(autoincrement())
   nome_usuario  String @db.VarChar(100)
   email_usuario String @unique @db.VarChar(100)
   senha_usuario String @db.VarChar(255)
-  cargo_usuario cargos
+  cargo_usuario Cargos
 }
 
-enum cargos {
+// tipos de cargos que um usuario pode possuir
+enum Cargos {
   atendente
   admin
   tecnico
