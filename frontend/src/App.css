@@ -182,3 +182,51 @@
     border-right-color: var(--border);
   }
 }
+
+/* telas de usuarios */
+.app {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.app nav {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 400px;
+}
+
+.form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+}
+
+.tabela {
+  width: 100%;
+  margin-top: 16px;
+  border-collapse: collapse;
+}
+
+.tabela th,
+.tabela td {
+  padding: 8px;
+  border: 1px solid #ccc;
+  text-align: left;
+}
+
+.erro {
+  color: #c62828;
+}
+
+.sucesso {
+  color: #2e7d32;
+}
