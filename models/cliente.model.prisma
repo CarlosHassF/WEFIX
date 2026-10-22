@@ -1,0 +1,14 @@
+// DECISAO: tamanhos de VarChar — escolhido: nome 100, whatsapp 13 (DDI+DDD+numero), email 100; alternativas: outros limites
+// clientes da assistencia; whatsapp usado pelo n8n
+model Cliente {
+  id_cliente       BigInt  @id @default(autoincrement())
+  nome_cliente     String  @db.VarChar(100)
+  whatsapp_cliente String  @unique @db.VarChar(13)
+  email_cliente    String? @db.VarChar(100)
+
+  dispositivos Dispositivo[]
+  fichas       Ficha[]
+
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+}

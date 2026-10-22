@@ -5,10 +5,12 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --test --test-concurrency=1 \"tests/**/*.test.js\"",
     "postinstall": "prisma generate",
     "dev": "node --watch server.js",
-    "prisma:generate": "prisma generate"
+    "prisma:generate": "prisma generate",
+    "test:db": "PRISMA_ALVO=teste prisma migrate deploy",
+    "db:seed": "prisma db seed"
   },
   "keywords": [],
   "author": "",

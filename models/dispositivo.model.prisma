@@ -1,0 +1,27 @@
+// DECISAO: tamanhos de VarChar — escolhido: marca 50, modelo 100, numero_serie 50; alternativas: outros limites
+// aparelhos dos clientes
+model Dispositivo {
+  id_dispositivo BigInt          @id @default(autoincrement())
+  id_cliente     BigInt
+  tipo           TipoDispositivo
+  marca          String          @db.VarChar(50)
+  modelo         String          @db.VarChar(100)
+  numero_serie   String?         @db.VarChar(50)
+
+  cliente Cliente @relation(fields: [id_cliente], references: [id_cliente])
+  fichas  Ficha[]
+
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  @@index([numero_serie])
+}
+
+enum TipoDispositivo {
+  notebook
+  desktop
+  celular
+  tablet
+  impressora
+  outro
+}
