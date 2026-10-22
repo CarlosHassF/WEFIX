@@ -1,0 +1,180 @@
+.kanban-page {
+  padding: 24px 0;
+  color: var(--text);
+}
+
+/* cabeçalho e botão de atualização */
+.kanban-cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.kanban-cabecalho h2 {
+  margin: 0 0 6px;
+  font-size: 1.6rem;
+  color: var(--text-h);
+}
+
+.kanban-cabecalho p {
+  color: var(--text);
+}
+
+.kanban-cabecalho button {
+  padding: 10px 16px;
+  border: 1px solid var(--accent-border);
+  border-radius: 4px;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+}
+
+.kanban-cabecalho button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* colunas e cartões do Kanban */
+.kanban-colunas {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(230px, 1fr));
+  gap: 12px;
+  align-items: start;
+  overflow-x: auto;
+  padding: 4px 2px 16px;
+}
+
+/* estilo individual das colunas */
+.kanban-coluna {
+  min-height: 300px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--social-bg);
+}
+
+/* cabeçalho das colunas e quantidade de fichas */
+.kanban-coluna-cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.kanban-coluna-cabecalho h3 {
+  margin: 0;
+  color: var(--text-h);
+  font-size: 0.95rem;
+}
+
+.kanban-coluna-cabecalho span {
+  display: grid;
+  place-items: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--accent-bg);
+  color: var(--text-h);
+  font-size: 0.8rem;
+}
+
+/* cartões das fichas */
+.kanban-cartoes {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 230px;
+}
+
+/* informações exibidas em cada cartão */
+.kanban-cartao {
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--bg);
+  box-shadow: var(--shadow);
+  cursor: grab;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+
+.kanban-cartao:active {
+  cursor: grabbing;
+}
+
+.kanban-ficha-id {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--text);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.kanban-cliente {
+  margin: 0 0 12px;
+  color: var(--text-h);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.kanban-cartao p {
+  margin: 8px 0;
+  color: var(--text);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.kanban-cartao .kanban-observacao {
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  white-space: pre-wrap;
+}
+
+.kanban-cartao .kanban-valor {
+  margin: 12px 0 0;
+  color: var(--accent);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* estado de movimentação de uma ficha */
+.kanban-movendo {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+/* msg exibida quando a coluna está vazia */
+.kanban-vazio {
+  padding: 18px 8px;
+  color: var(--text);
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+/* msg de erro do Kanban */
+.kanban-erro {
+  margin-bottom: 16px;
+  padding: 12px;
+  border: 1px solid #f0c5c5;
+  border-radius: 8px;
+  background: #fff0f0;
+  color: #a52828;
+  overflow-wrap: anywhere;
+}
+
+/* aj ustes para telas menores */
+@media (max-width: 700px) {
+  .kanban-cabecalho {
+    align-items: flex-start;
+  }
+
+  .kanban-colunas {
+    grid-template-columns: repeat(5, minmax(250px, 1fr));
+  }
+}
