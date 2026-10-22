@@ -6,3 +6,4 @@ node_modules/
 .agents
 .codex
 /generated/prisma
+.superpowers/
