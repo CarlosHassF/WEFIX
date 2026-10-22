@@ -61,12 +61,14 @@ Remover: `prisma/schema.prisma`, `prisma7.config.ts`, `models/status.model.prism
 ### Task 1: Schema, migration nova, seed e infraestrutura de teste
 
 **Files:**
+
 - Rewrite: `models/usuario.model.prisma`, `models/ficha.model.prisma`, `models/evento.model.prisma`, `models/dispositivo.model.prisma`
 - Create: `models/cliente.model.prisma`, `models/prazo.model.prisma`, `database/seed.js`, `tests/helpers/env.js`, `tests/helpers/db.js`, `tests/seed.test.js`
 - Modify: `models/schema.prisma`, `prisma.config.ts`, `database/connection.js`, `package.json`, `.env.example`
 - Delete: os arquivos da lista "Remover" acima
 
 **Interfaces:**
+
 - Produces:
   - models Prisma `Usuario`, `Cliente`, `Dispositivo`, `Ficha`, `Evento`, `PrazoStatus` e enums `Cargos`, `StatusFicha`, `TipoDispositivo`, `OrigemEvento`, exatamente como a spec §5. Delegates do client: `prisma.usuario`, `prisma.cliente`, `prisma.dispositivo`, `prisma.ficha`, `prisma.evento`, `prisma.prazoStatus`.
   - Relações nomeadas em `Ficha`: `atendente` (`@relation("FichaAtendente")`, campo `id_atendente`) e `tecnico` (`@relation("FichaTecnico")`, campo `id_tecnico`). `Ficha.eventos`, `Evento.ficha`, `Evento.usuario`.
@@ -79,14 +81,14 @@ Remover: `prisma/schema.prisma`, `prisma7.config.ts`, `models/status.model.prism
 - [ ] **Step 2: Escrever os models** conforme a spec §5. Índices de `Evento`: `@@index([id_manutencao, entrou_em])` e `@@index([status, entrou_em])`. Índice em `Dispositivo.numero_serie`. `Cliente.whatsapp_cliente @unique`. `PrazoStatus.status StatusFicha @id`, `prazo_horas Int`. Para os tamanhos de VarChar, siga o padrão `// DECISAO:` uma vez no topo de cada arquivo.
 
 - [ ] **Step 3: Validar o schema**
-Run: `pnpm prisma validate && pnpm prisma format`
-Expected: `The schemas at models are valid`
+      Run: `pnpm prisma validate && pnpm prisma format`
+      Expected: `The schemas at models are valid`
 
 - [ ] **Step 4: `database/connection.js`** passa a ler `process.env.DATABASE_URL`. Remova o bloco comentado antigo do `pg`. `.env.example` ganha `TEST_DATABASE_URL`, `N8N_API_KEY`, `N8N_WEBHOOK_URL`, `ADMIN_EMAIL`, `ADMIN_SENHA` e perde `DB_USER`/`DB_PASS`/`DB_HOST`/`DB_PORT`/`DB_BANCO`.
 
 - [ ] **Step 5: Gerar a migration nova e o client**
-Run: `pnpm prisma migrate reset --force && pnpm prisma migrate dev --name schema_ordens_servico && pnpm prisma db seed`
-Expected: pasta nova em `database/migrations/` e o seed sem erro. Depois do Step 6, rode `pnpm test:db` para preparar o banco de teste.
+      Run: `pnpm prisma migrate reset --force && pnpm prisma migrate dev --name schema_ordens_servico && pnpm prisma db seed`
+      Expected: pasta nova em `database/migrations/` e o seed sem erro. Depois do Step 6, rode `pnpm test:db` para preparar o banco de teste.
 
 - [ ] **Step 6: Banco de teste pelo CLI.** Em `prisma.config.ts`, `datasource.url` vira `process.env.PRISMA_ALVO === 'teste' ? env('TEST_DATABASE_URL') : env('DATABASE_URL')`. Scripts no `package.json`: `"test": "node --test --test-concurrency=1 tests/"`, `"test:db": "PRISMA_ALVO=teste prisma migrate reset --force"`, `"db:seed": "prisma db seed"`.
 
@@ -106,7 +108,10 @@ after(() => prisma.$disconnect())
 test('limparBanco deixa um prazo por status não-final', async () => {
   const prazos = await prisma.prazoStatus.findMany()
   assert.equal(prazos.length, 5)
-  assert.equal(prazos.find((p) => p.status === 'em_manutencao').prazo_horas, PRAZOS_INICIAIS.em_manutencao)
+  assert.equal(
+    prazos.find((p) => p.status === 'em_manutencao').prazo_horas,
+    PRAZOS_INICIAIS.em_manutencao
+  )
 })
 
 test('semearAdmin é idempotente e grava hash', async () => {
@@ -119,8 +124,8 @@ test('semearAdmin é idempotente e grava hash', async () => {
 ```
 
 - [ ] **Step 8: Rodar.**
-Run: `pnpm test`
-Expected: os 2 testes PASS. Se falharem, corrija seed ou helpers até passarem.
+      Run: `pnpm test`
+      Expected: os 2 testes PASS. Se falharem, corrija seed ou helpers até passarem.
 
 - [ ] **Step 9: Commit**
 
@@ -134,9 +139,11 @@ git commit -m "feat(db): novo schema de ordens de servico, seed e infraestrutura
 ### Task 2: Tabela de transições (pura) e erros HTTP
 
 **Files:**
+
 - Create: `utils/erroHttp.js`, `services/transicoes.js`, `tests/transicoes.test.js`
 
 **Interfaces:**
+
 - Produces:
   - `utils/erroHttp.js`: `export class ErroHttp extends Error { constructor(status: number, mensagem: string) }` com `this.status`. `export function paraBigInt(valor, nome = 'id'): bigint` aceita só `/^\d+$/` (string ou number inteiro ≥ 1); caso contrário, `throw new ErroHttp(400, \`${nome} inválido\`)`.
   - `services/transicoes.js`:
@@ -144,23 +151,23 @@ git commit -m "feat(db): novo schema de ordens de servico, seed e infraestrutura
     - `export const WEBHOOK_POR_STATUS = { em_espera: 'orcamento', consertado: 'retirada' }`
     - `export const TRANSICOES`: array de regras `{ de, para, ator, exige }`, onde `ator` é `'n8n'` ou `{ cargos: string[], somenteResponsavel?: boolean }` e `exige` é uma lista de campos, cada um vindo de `dados` ou já presente na ficha. Uma linha por combinação da spec §4:
 
-      | de | para | ator | exige |
-      |---|---|---|---|
-      | aberta | em_analise | `{cargos:['tecnico']}` | – |
-      | em_analise | em_espera | `{cargos:['tecnico'], somenteResponsavel:true}` | diagnostico, valor_servico |
-      | em_espera | em_manutencao | `'n8n'` | – |
-      | em_espera | em_manutencao | `{cargos:['admin']}` | observacao |
-      | em_manutencao | em_aprovacao | `{cargos:['tecnico'], somenteResponsavel:true}` | – |
-      | em_aprovacao | em_manutencao | `{cargos:['admin']}` | observacao |
-      | em_aprovacao | consertado | `{cargos:['admin']}` | – |
-      | aberta, em_analise, em_espera | cancelado | `{cargos:['atendente','admin']}` | – |
-      | em_espera | cancelado | `'n8n'` | – |
+      | de                            | para          | ator                                            | exige                      |
+      | ----------------------------- | ------------- | ----------------------------------------------- | -------------------------- |
+      | aberta                        | em_analise    | `{cargos:['tecnico']}`                          | –                          |
+      | em_analise                    | em_espera     | `{cargos:['tecnico'], somenteResponsavel:true}` | diagnostico, valor_servico |
+      | em_espera                     | em_manutencao | `'n8n'`                                         | –                          |
+      | em_espera                     | em_manutencao | `{cargos:['admin']}`                            | observacao                 |
+      | em_manutencao                 | em_aprovacao  | `{cargos:['tecnico'], somenteResponsavel:true}` | –                          |
+      | em_aprovacao                  | em_manutencao | `{cargos:['admin']}`                            | observacao                 |
+      | em_aprovacao                  | consertado    | `{cargos:['admin']}`                            | –                          |
+      | aberta, em_analise, em_espera | cancelado     | `{cargos:['atendente','admin']}`                | –                          |
+      | em_espera                     | cancelado     | `'n8n'`                                         | –                          |
 
     - `export function validarTransicao({ ficha, para, ator, dados = {} }): void`, onde `ator` é `{ tipo: 'usuario', id: bigint, cargo }` ou `{ tipo: 'n8n' }`. A ordem dos erros é fixa:
       1. nenhuma regra com `(ficha.status, para)` → 409 `Transição de <de> para <para> não permitida`;
       2. nenhuma regra dessas aceita o ator, ou `somenteResponsavel` com `ficha.id_tecnico !== ator.id` → 403;
       3. campo de `exige` ausente ou vazio → 400 `<campo> é obrigatório`.
-      Não valida o formato do valor; isso é a Task 3.
+         Não valida o formato do valor; isso é a Task 3.
 
 - [ ] **Step 1: Escrever os testes** em `tests/transicoes.test.js` (sem banco, sem `env.js`). Use `ficha = { status, id_tecnico: 7n, diagnostico: null, valor_servico: null }`, `tec = { tipo:'usuario', id:7n, cargo:'tecnico' }`, `outroTec = {...tec, id: 8n}`, `admin`, `atendente`, `n8n = { tipo:'n8n' }`. Casos, com `assert.throws(fn, { status: N })` ou `assert.doesNotThrow`:
   - `aberta→em_analise` tec ok; atendente 403
@@ -182,9 +189,11 @@ git commit -m "feat(db): novo schema de ordens de servico, seed e infraestrutura
 ### Task 3: `criarFicha` e `mudarStatus` (transação + eventos)
 
 **Files:**
+
 - Create: `services/fichaStatus.service.js`, `utils/validacao.js`, `services/n8n.service.js` (stub nesta task), `tests/fichaStatus.test.js`
 
 **Interfaces:**
+
 - Consumes: `validarTransicao`, `STATUS_FINAIS`, `WEBHOOK_POR_STATUS`, `ErroHttp` (Task 2); delegates Prisma (Task 1); `limparBanco`, `criaUsuarioTeste` (Task 1).
 - Produces:
   - `utils/validacao.js`: `export function validaValor(valor): string`. Aceita number ou string com até 2 casas, ≥ 0, e devolve uma string normalizada (`'150.00'`); caso contrário, `ErroHttp(400, 'valor_servico inválido')`. `export function validaTexto(valor, campo, max): string|undefined`, que faz trim, devolve `undefined` se ausente e dá 400 se passar de `max`.
@@ -219,10 +228,12 @@ git commit -m "feat(db): novo schema de ordens de servico, seed e infraestrutura
 ### Task 4: Base HTTP: app, middlewares, tratamento de erro e login
 
 **Files:**
+
 - Create: `app.js`, `middlewares/trataErros.middleware.js`, `middlewares/validaApiKeyN8n.middleware.js`, `tests/helpers/app.js`, `tests/auth.test.js`
 - Modify: `server.js`, `middlewares/auth.middleware.js`, `middlewares/validaCargo.middleware.js`, `controllers/auth.controller.js`, `repository/usuarios.repository.js` (só `buscarEmail` e o novo `buscarUsuarioPorId`)
 
 **Interfaces:**
+
 - Consumes: `ErroHttp`, `paraBigInt` (Task 2).
 - Produces:
   - `app.js`: `export default app`. Faz `BigInt.prototype.toJSON`, `express.json()`, registra as rotas existentes e as novas (cada task seguinte adiciona sua linha `app.use`) e, por último, `trataErros`. `server.js` só faz `app.listen(3000, ...)`.
@@ -250,10 +261,12 @@ git commit -m "feat(db): novo schema de ordens de servico, seed e infraestrutura
 ### Task 5: API de usuários
 
 **Files:**
+
 - Rewrite: `controllers/usuarios.controller.js`, `repository/usuarios.repository.js`, `routes/usuarios.routes.js`
 - Test: `tests/usuarios.test.js`
 
 **Interfaces:**
+
 - Consumes: Task 4 (`validaToken`, `validaCargo`, `ErroHttp`, `paraBigInt`, `subirApp`, `req`).
 - Produces: rotas da spec §7 "Usuários", todas `validaToken, validaCargo('admin')`. Repository: `listarUsuarios()`, `criarUsuario(dados)`, `editarUsuario(id, dados)`, `alterarAtivo(id, ativo)`, `buscarEmail`, `buscarUsuarioPorId`. Nenhum devolve `senha_usuario`, exceto `buscarEmail` (o login precisa dele). Payload de criação: `nome_usuario`, `email_usuario`, `senha`, `cargo_usuario` (um dos `Cargos`), todos obrigatórios, senão 400.
 
@@ -276,10 +289,12 @@ git commit -m "feat(db): novo schema de ordens de servico, seed e infraestrutura
 ### Task 6: API de clientes e dispositivos
 
 **Files:**
+
 - Create: `controllers/clientes.controller.js`, `controllers/dispositivos.controller.js`, `repository/clientes.repository.js`, `repository/dispositivos.repository.js`, `routes/clientes.routes.js`, `routes/dispositivos.routes.js`, `tests/clientes.test.js`
 - Modify: `app.js` (`/clientes`, `/dispositivos`)
 
 **Interfaces:**
+
 - Produces: rotas da spec §7 "Clientes" e "Dispositivos". Leitura: `validaCargo('atendente','admin','tecnico')`. Escrita: `validaCargo('atendente','admin')`. `GET /clientes/:id` inclui `dispositivos` e `fichas` (só `id_manutencao`, `status`, `created_at`). Validação: `whatsapp_cliente` obrigatório e `/^\d{12,13}$/`; `nome_cliente` obrigatório; `tipo` em `TipoDispositivo`; `marca` e `modelo` obrigatórios; `numero_serie` opcional. `?busca=` faz `contains` com `insensitive` no nome ou `contains` no WhatsApp.
 
 - [ ] **Step 1: Testes:**
@@ -302,10 +317,12 @@ git commit -m "feat(db): novo schema de ordens de servico, seed e infraestrutura
 ### Task 7: API de fichas
 
 **Files:**
+
 - Rewrite: `controllers/fichas.controller.js`, `repository/fichas.repository.js`, `routes/fichas.routes.js`
 - Test: `tests/fichas.test.js`
 
 **Interfaces:**
+
 - Consumes: `criarFicha`, `mudarStatus` (Task 3); `validaValor`, `validaTexto` (Task 3).
 - Produces:
   - `repository/fichas.repository.js`: `listarFichas({ status?, id_tecnico?, id_cliente?, expirada?, pagina, limite })`, `buscarFichaPorId(id)` (inclui cliente, dispositivo, atendente, tecnico, eventos ordenados por `entrou_em`; usuários só com `id_usuario` e `nome_usuario`), `editarFicha(id, dados)` (nunca recebe `status`).
@@ -338,11 +355,13 @@ git commit -m "feat(db): novo schema de ordens de servico, seed e infraestrutura
 ### Task 8: Integração n8n (webhook de saída e endpoint de orçamento)
 
 **Files:**
+
 - Rewrite: `services/n8n.service.js`
 - Create: `controllers/integracoes.controller.js`, `routes/integracoes.routes.js`, `tests/n8n.test.js`
 - Modify: `app.js` (`/integracoes/n8n`)
 
 **Interfaces:**
+
 - Consumes: `mudarStatus` (Task 3), `validaApiKeyN8n` (Task 4), `buscarFichaPorId` (Task 7).
 - Produces:
   - `notificar(evento, id_manutencao)`: lê `N8N_WEBHOOK_URL` em tempo de chamada. Sem URL → `console.warn` e retorna. Com URL, carrega a ficha e faz `fetch` POST JSON com o payload exato da spec §7. Usa timeout de 5 s (`AbortSignal.timeout(5000)`). Qualquer erro ou status ≥ 400 → `console.error` e retorna, **nunca lança**.
@@ -366,10 +385,12 @@ git commit -m "feat(db): novo schema de ordens de servico, seed e infraestrutura
 ### Task 9: Prazos (SLA)
 
 **Files:**
+
 - Create: `controllers/prazos.controller.js`, `repository/prazos.repository.js`, `routes/prazos.routes.js`, `tests/prazos.test.js`
 - Modify: `app.js` (`/prazos`)
 
 **Interfaces:**
+
 - Produces: `GET /prazos` e `PUT /prazos/:status { prazo_horas }`, só para admin. `:status` precisa ser um status não-final (senão 400). `prazo_horas` é inteiro de 1 a 720 (senão 400). Faz upsert.
 
 - [ ] **Step 1: Testes:**
@@ -387,10 +408,12 @@ git commit -m "feat(db): novo schema de ordens de servico, seed e infraestrutura
 ### Task 10: Métricas
 
 **Files:**
+
 - Create: `repository/metricas.repository.js`, `controllers/metricas.controller.js`, `routes/metricas.routes.js`, `tests/metricas.test.js`
 - Modify: `app.js` (`/metricas`)
 
 **Interfaces:**
+
 - Produces: as quatro rotas da spec §7 "Métricas", só para admin. Query: `de`, `ate` (`YYYY-MM-DD`, obrigatórios, `de ≤ ate`, senão 400) e `id_tecnico` opcional (`paraBigInt`).
   - O intervalo vira `[de 00:00, ate+1 00:00)` em `America/Sao_Paulo`. No SQL: `campo >= (${de}::date AT TIME ZONE 'America/Sao_Paulo') AND campo < ((${ate}::date + 1) AT TIME ZONE 'America/Sao_Paulo')` (Review Focus 5).
   - Horas = `EXTRACT(EPOCH FROM intervalo) / 3600`, arredondado com 2 casas. Converta `bigint`/`Decimal` do `$queryRaw` para `Number` antes de responder.
@@ -418,6 +441,7 @@ git commit -m "feat(db): novo schema de ordens de servico, seed e infraestrutura
 ### Task 11: Limpeza final e documentação
 
 **Files:**
+
 - Modify: `README.md`, qualquer arquivo com resto de código antigo
 
 - [ ] **Step 1:** `grep -rn "prisma.fichas\|prisma.usuarios\|import { stat }\|require(" --include=*.js . --exclude-dir=node_modules --exclude-dir=frontend`. Expected: nenhuma ocorrência.

@@ -19,6 +19,7 @@ Este documento define o modelo de banco final (Prisma + PostgreSQL) e a API REST
 ## 2. Objetivos, não-objetivos e anti-objetivos
 
 **Objetivos**
+
 - Modelar cliente, dispositivo, ficha, histórico de etapas (eventos) e prazos por status.
 - Garantir pela API que a ficha só faz as transições permitidas, e só pelo cargo certo.
 - Registrar cada passagem por status com quem moveu, quando entrou, quando saiu e o prazo dela.
@@ -27,6 +28,7 @@ Este documento define o modelo de banco final (Prisma + PostgreSQL) e a API REST
 - Corrigir os problemas atuais de autorização e os bugs de controllers e repositories.
 
 **Não-objetivos (fora deste trabalho)**
+
 - Frontend (a pasta `frontend/` não é tocada).
 - O fluxo do n8n em si (mensagens, templates de WhatsApp). A API só dispara e recebe.
 - Pagamento, emissão de nota e estoque de peças.
@@ -36,6 +38,7 @@ Este documento define o modelo de banco final (Prisma + PostgreSQL) e a API REST
 - Preservar os dados do banco atual. É banco de desenvolvimento: as migrations antigas são substituídas e o banco é recriado com `prisma migrate reset`.
 
 **Anti-objetivos (seria falha mesmo funcionando)**
+
 - Qualquer caminho que mude o status sem passar pela tabela de transições, ou sem gravar o evento. Isso estraga as métricas.
 - Apagar fichas ou usuários. O histórico tem que ser imutável para as métricas do passado não mudarem.
 - Um usuário sem login conseguir criar usuários (problema que existe hoje no `POST /usuarios`).
@@ -54,17 +57,18 @@ Este documento define o modelo de banco final (Prisma + PostgreSQL) e a API REST
 
 ## 4. Fluxo da ficha (decidido)
 
-| Status | Significado | Quem leva a ficha para este status |
-|---|---|---|
-| `aberta` | Criada pelo atendente | atendente, admin (na criação) |
-| `em_analise` | Técnico assumiu e está diagnosticando | técnico (a partir de `aberta`). Ele vira o técnico responsável |
-| `em_espera` | Diagnóstico e valor informados; aguardando o cliente aprovar o orçamento | técnico responsável (a partir de `em_analise`). Exige `diagnostico` e `valor_servico` |
-| `em_manutencao` | Cliente aprovou o valor; conserto em andamento | **n8n** (cliente aprovou no WhatsApp), a partir de `em_espera`; **admin**, a partir de `em_espera` (aprovação manual: o cliente aprovou por telefone ou o n8n está fora; `observacao` obrigatória); **admin**, a partir de `em_aprovacao` (reprovou o serviço) |
-| `em_aprovacao` | Serviço pronto; admin revisa | técnico responsável (a partir de `em_manutencao`) |
-| `consertado` (final) | Admin aprovou o serviço; cliente avisado para retirar | admin (a partir de `em_aprovacao`) |
-| `cancelado` (final) | Cliente desistiu ou recusou o orçamento | n8n (recusa, a partir de `em_espera`); atendente ou admin (a partir de `aberta`, `em_analise` ou `em_espera`) |
+| Status               | Significado                                                              | Quem leva a ficha para este status                                                                                                                                                                                                                             |
+| -------------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `aberta`             | Criada pelo atendente                                                    | atendente, admin (na criação)                                                                                                                                                                                                                                  |
+| `em_analise`         | Técnico assumiu e está diagnosticando                                    | técnico (a partir de `aberta`). Ele vira o técnico responsável                                                                                                                                                                                                 |
+| `em_espera`          | Diagnóstico e valor informados; aguardando o cliente aprovar o orçamento | técnico responsável (a partir de `em_analise`). Exige `diagnostico` e `valor_servico`                                                                                                                                                                          |
+| `em_manutencao`      | Cliente aprovou o valor; conserto em andamento                           | **n8n** (cliente aprovou no WhatsApp), a partir de `em_espera`; **admin**, a partir de `em_espera` (aprovação manual: o cliente aprovou por telefone ou o n8n está fora; `observacao` obrigatória); **admin**, a partir de `em_aprovacao` (reprovou o serviço) |
+| `em_aprovacao`       | Serviço pronto; admin revisa                                             | técnico responsável (a partir de `em_manutencao`)                                                                                                                                                                                                              |
+| `consertado` (final) | Admin aprovou o serviço; cliente avisado para retirar                    | admin (a partir de `em_aprovacao`)                                                                                                                                                                                                                             |
+| `cancelado` (final)  | Cliente desistiu ou recusou o orçamento                                  | n8n (recusa, a partir de `em_espera`); atendente ou admin (a partir de `aberta`, `em_analise` ou `em_espera`)                                                                                                                                                  |
 
 Regras:
+
 - **O cancelamento só é possível antes da manutenção** (`aberta`, `em_analise`, `em_espera`).
 - A reprovação do admin (`em_aprovacao` → `em_manutencao`) exige `observacao` com o motivo. A ficha pode repetir esse ciclo várias vezes.
 - Status finais não mudam mais.
@@ -107,6 +111,7 @@ enum OrigemEvento { usuario n8n }
 **Dispositivo**: `id_dispositivo`, `id_cliente` (FK), `tipo TipoDispositivo`, `marca`, `modelo`, `numero_serie?` (série ou IMEI, com index não-único), timestamps. Relações: fichas.
 
 **Ficha**:
+
 - `id_manutencao` (mantém o nome atual)
 - `id_cliente` (FK; o dono do aparelho na época do atendimento, para onde o n8n manda as mensagens)
 - `id_dispositivo` (FK)
@@ -121,6 +126,7 @@ enum OrigemEvento { usuario n8n }
 - timestamps
 
 **Evento** (uma passagem por status):
+
 - `id_evento`
 - `id_manutencao` (FK Ficha)
 - `status StatusFicha`
@@ -135,6 +141,7 @@ enum OrigemEvento { usuario n8n }
 - índices em `(id_manutencao, entrou_em)` e `(status, entrou_em)`
 
 **PrazoStatus** (SLA editável pelo admin):
+
 - `status StatusFicha @id`
 - `prazo_horas Int` (horas corridas)
 - timestamps
@@ -142,6 +149,7 @@ enum OrigemEvento { usuario n8n }
 - Mudar um prazo **não altera eventos antigos**, porque `prazo_limite` fica gravado em cada evento.
 
 ### Arquivos
+
 Um arquivo por domínio em `models/`: `usuario.model.prisma`, `cliente.model.prisma`, `dispositivo.model.prisma`, `ficha.model.prisma`, `evento.model.prisma`, `prazo.model.prisma`. O `status.model.prisma` deixa de existir como model, e o enum `StatusFicha` vai para `ficha.model.prisma`.
 
 ## 6. Mudança de status (núcleo)
@@ -165,25 +173,30 @@ A criação da ficha também grava o primeiro evento (`aberta`) na mesma transa�
 Respostas sempre em JSON. Sucesso: o recurso, ou `{ mensagem }`. Erro: `{ erro }`. Todas as rotas, menos `/auth/login` e `/integracoes/n8n/*`, exigem JWT.
 
 **Auth**
+
 - `POST /auth/login`: como hoje. Bloqueia usuário com `ativo = false`.
 
 **Usuários** (admin)
+
 - `GET /usuarios`: sem o hash da senha.
 - `POST /usuarios`: **passa a exigir admin.** O primeiro admin é criado por um script de seed (`prisma/seed` ou `scripts/cria-admin.js`) que lê e-mail e senha do `.env`.
 - `PUT /usuarios/:id_usuario`: senha opcional (gera novo hash só se vier).
 - `PATCH /usuarios/:id_usuario/ativo` `{ ativo }`: desativar e reativar. **Não existe DELETE.**
 
 **Clientes** (atendente, admin; técnico só lê)
+
 - `GET /clientes?busca=`: busca por nome ou WhatsApp.
 - `GET /clientes/:id_cliente`: com dispositivos e fichas.
 - `POST /clientes`, `PUT /clientes/:id_cliente`
 
 **Dispositivos** (atendente, admin; técnico só lê)
+
 - `GET /clientes/:id_cliente/dispositivos`
 - `POST /clientes/:id_cliente/dispositivos`
 - `PUT /dispositivos/:id_dispositivo`
 
 **Fichas**
+
 - `GET /fichas?status=&id_tecnico=&id_cliente=&expirada=`: todos os cargos. Cada ficha vem com `etapa_atual { status, entrou_em, prazo_limite, expirado }`.
 - `GET /fichas/:id_manutencao`: com cliente, dispositivo, atendente, técnico e o histórico de eventos.
 - `POST /fichas` (atendente, admin): recebe `id_cliente`, `id_dispositivo`, `defeito_relatado` e os campos de entrada. O dispositivo precisa pertencer ao cliente.
@@ -192,9 +205,11 @@ Respostas sempre em JSON. Sucesso: o recurso, ou `{ mensagem }`. Erro: `{ erro }
 - **Não existe DELETE.**
 
 **Prazos** (admin)
+
 - `GET /prazos`, `PUT /prazos/:status` `{ prazo_horas }`
 
 **Métricas** (admin). Todas aceitam `de`, `ate` (datas) e `id_tecnico` opcional. "Dia" é contado no fuso `America/Sao_Paulo`.
+
 - `GET /metricas/concluidas-por-dia`: `[{ dia, consertadas, canceladas }]`, total e por técnico.
 - `GET /metricas/tempo-por-status`: média, mediana e máximo de horas por status, somando todas as passagens da mesma ficha pelo mesmo status (reprovações). Considera só eventos fechados.
 - `GET /metricas/tempo-total`: média e mediana de horas de `created_at` até `finalizada_em` para fichas `consertado`, total e por técnico.
@@ -202,6 +217,7 @@ Respostas sempre em JSON. Sucesso: o recurso, ou `{ mensagem }`. Erro: `{ erro }
 - Implementação livre: `$queryRaw` com SQL agregando `Evento`/`Ficha` é aceitável.
 
 **Integração n8n** (sem JWT; header `x-api-key` comparado com `N8N_API_KEY`)
+
 - `POST /integracoes/n8n/fichas/:id_manutencao/orcamento` `{ aprovado: boolean }`: aprovado leva a `em_manutencao`; recusado leva a `cancelado`. Passa por `mudarStatus` com ator `n8n`.
 - Saída: `POST` em `N8N_WEBHOOK_URL` com `{ evento: 'orcamento' | 'retirada', id_manutencao, cliente: { nome, whatsapp }, dispositivo: { tipo, marca, modelo }, diagnostico, valor_servico }`.
 
@@ -226,6 +242,7 @@ Respostas sempre em JSON. Sucesso: o recurso, ou `{ mensagem }`. Erro: `{ erro }
 ## 10. Testes
 
 Hoje não existe nenhum. **Decisão minha:** usar o `node:test` nativo (sem dependências novas) para:
+
 - a tabela de transições: cada par permitido e uma amostra de pares proibidos, por cargo e origem;
 - `mudarStatus` contra um banco de teste: grava e fecha eventos, calcula `expirado`, devolve 409 quando há concorrência;
 - uma consulta de métrica com dados conhecidos.
