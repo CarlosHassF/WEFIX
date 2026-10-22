@@ -50,16 +50,18 @@ export async function mudarStatus(id_manutencao, para, ator, dados = {}) {
     throw new ErroHttp(404, 'Ficha não encontrada')
   }
 
+  validarTransicao({ ficha, para, ator, dados })
   const valor_servico =
     dados.valor_servico === undefined
       ? undefined
       : validaValor(dados.valor_servico)
-  validarTransicao({ ficha, para, ator, dados })
+  // diagnostico em branco nao apaga o ja registrado
+  const diagnostico = dados.diagnostico?.trim() || undefined
 
   const atualizada = await prisma.$transaction(async (tx) => {
     const agora = new Date()
     const data = { status: para }
-    if (dados.diagnostico !== undefined) data.diagnostico = dados.diagnostico
+    if (diagnostico !== undefined) data.diagnostico = diagnostico
     if (valor_servico !== undefined) data.valor_servico = valor_servico
     if (para === 'em_analise') data.id_tecnico = ator.id
     if (STATUS_FINAIS.includes(para)) data.finalizada_em = agora

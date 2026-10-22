@@ -132,7 +132,9 @@ export async function alteraFicha(req, res) {
     if (valor_servico !== undefined) dados.valor_servico = valor_servico
   }
 
-  res.status(200).json(await fichasRepository.editarFicha(id, dados))
+  res
+    .status(200)
+    .json(await fichasRepository.editarFicha(id, ficha.status, dados))
 }
 
 export async function alteraStatus(req, res) {

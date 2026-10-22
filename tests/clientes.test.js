@@ -141,3 +141,17 @@ test('rota inexistente responde JSON 404', async () => {
   assert.equal(status, 404)
   assert.ok(corpo.erro)
 })
+
+test('whatsapp enviado como número é gravado como texto', async () => {
+  const { status, corpo } = await atendente.post('/clientes', {
+    nome_cliente: 'Num',
+    whatsapp_cliente: 5511999999999,
+  })
+  assert.equal(status, 201)
+  assert.equal(corpo.whatsapp_cliente, '5511999999999')
+})
+
+test('id fora do intervalo bigint dá 400', async () => {
+  const { status } = await tecnico.get('/clientes/99999999999999999999')
+  assert.equal(status, 400)
+})

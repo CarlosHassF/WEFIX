@@ -78,7 +78,15 @@ test('status final não muda', () => {
 test('paraBigInt aceita só inteiros positivos', () => {
   assert.equal(paraBigInt('12'), 12n)
   assert.equal(paraBigInt(3), 3n)
-  for (const v of ['abc', '1.5', '0', '', undefined, -1]) {
+  for (const v of [
+    'abc',
+    '1.5',
+    '0',
+    '',
+    undefined,
+    -1,
+    '99999999999999999999',
+  ]) {
     assert.throws(() => paraBigInt(v), { status: 400 })
   }
 })

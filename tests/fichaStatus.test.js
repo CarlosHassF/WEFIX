@@ -4,6 +4,7 @@ import assert from 'node:assert/strict'
 import prisma from '../database/connection.js'
 import { limparBanco, criaUsuarioTeste } from './helpers/db.js'
 import { criarFicha, mudarStatus } from '../services/fichaStatus.service.js'
+import { editarFicha } from '../repository/fichas.repository.js'
 
 let ctx
 
@@ -161,5 +162,59 @@ test('mudanças simultâneas: uma vence, outra recebe 409', async () => {
 test('ficha inexistente dá 404', async () => {
   await assert.rejects(mudarStatus(999n, 'em_analise', ctx.tec), {
     status: 404,
+  })
+})
+
+test('valor e diagnóstico só entram na ida para em_espera', async () => {
+  const { id_manutencao: id } = await ctx.nova()
+  await mudarStatus(id, 'em_analise', ctx.tec)
+  await mudarStatus(id, 'em_espera', ctx.tec, {
+    diagnostico: 'trocar tela',
+    valor_servico: '150',
+  })
+  await assert.rejects(
+    mudarStatus(id, 'em_manutencao', ctx.admin, {
+      observacao: 'tel',
+      valor_servico: '1.00',
+      diagnostico: 'outro',
+    }),
+    { status: 400 }
+  )
+  const ficha = await prisma.ficha.findUnique({ where: { id_manutencao: id } })
+  assert.equal(ficha.status, 'em_espera')
+  assert.equal(ficha.valor_servico.toString(), '150')
+  assert.equal(ficha.diagnostico, 'trocar tela')
+})
+
+test('diagnóstico em branco não apaga o já registrado', async () => {
+  const { id_manutencao: id } = await ctx.nova()
+  await mudarStatus(id, 'em_analise', ctx.tec)
+  await prisma.ficha.update({
+    where: { id_manutencao: id },
+    data: { diagnostico: 'placa', valor_servico: '80' },
+  })
+  const ficha = await mudarStatus(id, 'em_espera', ctx.tec, {
+    diagnostico: '  ',
+  })
+  assert.equal(ficha.diagnostico, 'placa')
+})
+
+test('valor acima de Decimal(10,2) dá 400', async () => {
+  const { id_manutencao: id } = await ctx.nova()
+  await mudarStatus(id, 'em_analise', ctx.tec)
+  await assert.rejects(
+    mudarStatus(id, 'em_espera', ctx.tec, {
+      diagnostico: 'x',
+      valor_servico: '100000000',
+    }),
+    { status: 400 }
+  )
+})
+
+test('edição com status lido desatualizado dá 409', async () => {
+  const { id_manutencao: id } = await ctx.nova()
+  await mudarStatus(id, 'em_analise', ctx.tec)
+  await assert.rejects(editarFicha(id, 'aberta', { observacao: 'atrasada' }), {
+    status: 409,
   })
 })

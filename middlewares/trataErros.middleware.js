@@ -11,6 +11,10 @@ export function trataErros(err, req, res, next) {
   if (err.code === 'P2002') {
     return res.status(409).json({ erro: 'Registro duplicado' })
   }
+  // valor fora do tamanho da coluna (ex.: numero grande demais)
+  if (err.code === 'P2020') {
+    return res.status(400).json({ erro: 'Valor fora do intervalo permitido' })
+  }
   if (err.code === 'P2025') {
     return res.status(404).json({ erro: 'Registro não encontrado' })
   }

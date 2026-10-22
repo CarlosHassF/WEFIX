@@ -6,7 +6,10 @@ import { paginacao } from '../utils/paginacao.js'
 // valida campos de cliente; na criacao nome e whatsapp sao obrigatorios
 function dadosCliente(body, { criacao }) {
   const nome_cliente = validaTexto(body.nome_cliente, 'nome_cliente', 100)
-  const whatsapp_cliente = body.whatsapp_cliente
+  const whatsapp_cliente =
+    body.whatsapp_cliente === undefined
+      ? undefined
+      : String(body.whatsapp_cliente)
   const email_cliente = validaTexto(body.email_cliente, 'email_cliente', 100)
 
   if (criacao && (!nome_cliente || !whatsapp_cliente)) {

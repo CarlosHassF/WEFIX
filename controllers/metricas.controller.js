@@ -9,7 +9,11 @@ function lerFiltros(query) {
     ['de', de],
     ['ate', ate],
   ]) {
-    if (!data.test(valor ?? '') || Number.isNaN(Date.parse(valor))) {
+    // ida e volta pela data rejeita dias inexistentes (ex.: 2026-02-30)
+    if (
+      !data.test(valor ?? '') ||
+      new Date(`${valor}T00:00:00Z`).toISOString().slice(0, 10) !== valor
+    ) {
       throw new ErroHttp(400, `${nome} deve ser uma data YYYY-MM-DD`)
     }
   }

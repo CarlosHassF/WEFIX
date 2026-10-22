@@ -1,4 +1,5 @@
 import prisma from '../database/connection.js'
+import { ErroHttp } from '../utils/erroHttp.js'
 
 const USUARIO_RESUMO = { select: { id_usuario: true, nome_usuario: true } }
 
@@ -67,6 +68,14 @@ export async function buscarFichaPorId(id_manutencao) {
 }
 
 // edita dados da ficha; status so muda via mudarStatus
-export async function editarFicha(id_manutencao, dados) {
-  return prisma.ficha.update({ where: { id_manutencao }, data: dados })
+export async function editarFicha(id_manutencao, statusLido, dados) {
+  // so edita se o status nao mudou desde a leitura que validou as regras
+  const { count } = await prisma.ficha.updateMany({
+    where: { id_manutencao, status: statusLido },
+    data: dados,
+  })
+  if (count === 0) {
+    throw new ErroHttp(409, 'Ficha alterada por outra requisição')
+  }
+  return prisma.ficha.findUnique({ where: { id_manutencao } })
 }

@@ -180,6 +180,11 @@ test('período obrigatório e válido; só admin', async () => {
     (await admin.get('/metricas/tempo-total?de=ontem&ate=2026-10-10')).status,
     400
   )
+  assert.equal(
+    (await admin.get('/metricas/tempo-total?de=2026-02-30&ate=2026-03-01'))
+      .status,
+    400
+  )
   const tec = req(api.url, (await criaUsuarioTeste({ cargo: 'tecnico' })).token)
   assert.equal((await tec.get(`/metricas/tempo-total${periodo}`)).status, 403)
 })
