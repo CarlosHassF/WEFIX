@@ -31,7 +31,13 @@ export async function deletaUsuario(id_usuario) {
   })
 }
 export async function buscarEmail(email_usuario) {
-  return prisma.usuarios.findUnique({
+  return prisma.usuario.findUnique({
     where: { email_usuario },
+  })
+}
+
+export async function buscarUsuarioPorId(id_usuario) {
+  return prisma.usuario.findUnique({
+    where: { id_usuario },
   })
 }

@@ -2,40 +2,36 @@ import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 
 import * as usuariosRepository from '../repository/usuarios.repository.js'
+import { ErroHttp } from '../utils/erroHttp.js'
 
 export async function login(req, res) {
-  try {
-    const { email_usuario, senha } = req.body
+  const { email_usuario, senha } = req.body ?? {}
 
-    if (!email_usuario || !senha) {
-      return res.status(400).send({ erro: 'Email e senha são obrigatorios' })
-    }
-
-    const usuario = await usuariosRepository.buscarEmail(email_usuario)
-
-    if (!usuario) {
-      return res.status(401).send({ erro: 'Credenciais invalidas' })
-    }
-    const senha_usuario = await bcrypt.compare(senha, usuario.senha_usuario)
-
-    if (!senha_usuario) {
-      return res.status(401).send({ erro: 'Credenciais invalidas' })
-    }
-
-    //gera o token com id, nome e cargo
-    const token = jwt.sign(
-      {
-        id: usuario.id_usuario.toString(),
-        nome: usuario.nome_usuario,
-        cargo: usuario.cargo_usuario,
-        is_logged: true
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: '24h' }
-    )
-    res.status(200).send({ token })
-  } catch (e) {
-    console.log(token)
-    res.status(500).send({ erro: 'ocorreu um erro inesperado..' })
+  if (!email_usuario || !senha) {
+    throw new ErroHttp(400, 'Email e senha são obrigatorios')
   }
+
+  const usuario = await usuariosRepository.buscarEmail(email_usuario)
+
+  // usuario inexistente, desativado ou senha errada recebem a mesma resposta
+  if (
+    !usuario ||
+    !usuario.ativo ||
+    !(await bcrypt.compare(senha, usuario.senha_usuario))
+  ) {
+    throw new ErroHttp(401, 'Credenciais invalidas')
+  }
+
+  //gera o token com id, nome e cargo
+  const token = jwt.sign(
+    {
+      id: usuario.id_usuario.toString(),
+      nome: usuario.nome_usuario,
+      cargo: usuario.cargo_usuario,
+      is_logged: true,
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: '24h' }
+  )
+  res.status(200).json({ token })
 }
