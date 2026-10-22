@@ -5,6 +5,7 @@ import authRoutes from './routes/auth.routes.js'
 import clientesRoutes from './routes/clientes.routes.js'
 import dispositivosRoutes from './routes/dispositivos.routes.js'
 import integracoesRoutes from './routes/integracoes.routes.js'
+import prazosRoutes from './routes/prazos.routes.js'
 import {
   trataErros,
   rotaNaoEncontrada,
@@ -22,6 +23,7 @@ app.use('/usuarios', usuariosRoutes) // registra rotas de usuarios
 app.use('/auth', authRoutes) // registra rotas de autenticacao
 app.use('/clientes', clientesRoutes) // clientes e seus dispositivos
 app.use('/dispositivos', dispositivosRoutes) // edicao de dispositivos
+app.use('/prazos', prazosRoutes) // prazos (SLA) por status
 app.use('/integracoes/n8n', integracoesRoutes) // chamadas do n8n
 app.use(rotaNaoEncontrada) // 404 em JSON
 app.use(trataErros) // converte erros em respostas { erro }
