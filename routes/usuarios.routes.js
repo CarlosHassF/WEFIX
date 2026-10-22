@@ -5,12 +5,12 @@ import { validaToken } from '../middlewares/auth.middleware.js'
 import { validaCargo } from '../middlewares/validaCargo.middleware.js'
 
 const router = Router()
-router.post('/', UsuariosController.criaUsuario)
 router.use(validaToken, validaCargo('admin'))
 
-// rotas de usuario
+// rotas de usuario (sem DELETE: usuario e desativado)
 router.get('/', UsuariosController.buscarTodosUsuarios)
+router.post('/', UsuariosController.criaUsuario)
 router.put('/:id_usuario', UsuariosController.editaUsuario)
-router.delete('/:id_usuario', UsuariosController.deletaUsuario)
+router.patch('/:id_usuario/ativo', UsuariosController.alteraAtivo)
 
 export default router

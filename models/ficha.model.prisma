@@ -1,0 +1,40 @@
+// DECISAO: tamanhos de VarChar — escolhido: textos de entrada 400, acessorios 200, senha 100, diagnostico 1000; alternativas: outros limites
+// fichas (ordens de servico) que os usuarios produzem
+model Ficha {
+  id_manutencao     BigInt      @id @default(autoincrement())
+  id_cliente        BigInt
+  id_dispositivo    BigInt
+  id_atendente      BigInt
+  id_tecnico        BigInt?
+  defeito_relatado  String      @db.VarChar(400)
+  acessorios        String?     @db.VarChar(200)
+  estado_entrada    String?     @db.VarChar(400)
+  senha_dispositivo String?     @db.VarChar(100)
+  diagnostico       String?     @db.VarChar(1000)
+  valor_servico     Decimal?    @db.Decimal(10, 2)
+  observacao        String?     @db.VarChar(400)
+  status            StatusFicha @default(aberta)
+  finalizada_em     DateTime?   @db.Timestamptz(6)
+
+  cliente     Cliente     @relation(fields: [id_cliente], references: [id_cliente])
+  dispositivo Dispositivo @relation(fields: [id_dispositivo], references: [id_dispositivo])
+  atendente   Usuario     @relation("FichaAtendente", fields: [id_atendente], references: [id_usuario])
+  tecnico     Usuario?    @relation("FichaTecnico", fields: [id_tecnico], references: [id_usuario])
+  eventos     Evento[]
+
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  @@index([status])
+}
+
+// status que uma ficha pode assumir (fluxo na spec §4)
+enum StatusFicha {
+  aberta
+  em_analise
+  em_espera
+  em_manutencao
+  em_aprovacao
+  consertado
+  cancelado
+}

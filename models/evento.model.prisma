@@ -1,0 +1,29 @@
+// DECISAO: tamanho de VarChar — escolhido: observacao 400; alternativas: outros limites
+// cada passagem da ficha por um status (historico usado nas metricas)
+model Evento {
+  id_evento     BigInt       @id @default(autoincrement())
+  id_manutencao BigInt
+  status        StatusFicha
+  origem        OrigemEvento
+  id_usuario    BigInt?
+  observacao    String?      @db.VarChar(400)
+  entrou_em     DateTime     @default(now()) @db.Timestamptz(6)
+  saiu_em       DateTime?    @db.Timestamptz(6)
+  prazo_limite  DateTime?    @db.Timestamptz(6)
+  expirado      Boolean      @default(false)
+
+  ficha   Ficha    @relation(fields: [id_manutencao], references: [id_manutencao])
+  usuario Usuario? @relation(fields: [id_usuario], references: [id_usuario])
+
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  @@index([id_manutencao, entrou_em])
+  @@index([status, entrou_em])
+}
+
+// quem levou a ficha ao status: usuario logado ou o n8n (cliente via whatsapp)
+enum OrigemEvento {
+  usuario
+  n8n
+}

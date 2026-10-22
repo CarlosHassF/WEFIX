@@ -1,4 +1,5 @@
 // cliente prisma orm
+// DECISAO: generator do client — escolhido: prisma-client-js importado de '@prisma/client'; alternativas: prisma-client com output em generated/
 generator client {
   provider = "prisma-client-js"
 }
