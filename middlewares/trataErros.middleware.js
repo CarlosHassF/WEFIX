@@ -17,3 +17,8 @@ export function trataErros(err, req, res, next) {
   console.error(err)
   res.status(500).json({ erro: 'ocorreu um erro inesperado..' })
 }
+
+// rota que nao existe tambem responde { erro }
+export function rotaNaoEncontrada(req, res) {
+  res.status(404).json({ erro: 'Rota não encontrada' })
+}
