@@ -182,3 +182,129 @@
     border-right-color: var(--border);
   }
 }
+
+/* telas de usuarios */
+.app {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.app main {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.app nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 400px;
+}
+
+.form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+}
+
+.tabela {
+  width: 100%;
+  margin-top: 16px;
+  border-collapse: collapse;
+}
+
+.tabela th,
+.tabela td {
+  padding: 8px;
+  border: 1px solid #ccc;
+  text-align: left;
+}
+
+.erro {
+  color: #c62828;
+}
+
+.sucesso {
+  color: #2e7d32;
+}
+
+/* modal de confirmação de exclusão de ordens de serviço */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 12vh 20px 20px;
+  background: rgba(0, 0, 0, 0.5);
+  animation: aparecer-fundo 0.2s ease-out;
+}
+
+.modal-exclusao {
+  width: 100%;
+  max-width: 420px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  animation: descer-modal 0.3s ease-out;
+}
+
+.modal-exclusao h3 {
+  margin-top: 0;
+  color: var(--text-h);
+}
+
+.modal-acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.modal-acoes button {
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.modal-acoes .botao-excluir {
+  border-color: #c93636;
+  background: #c93636;
+  color: white;
+}
+
+.modal-acoes button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+@keyframes descer-modal {
+  from { opacity: 0; transform: translateY(-35px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes aparecer-fundo {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-overlay, .modal-exclusao { animation: none; }
+}
