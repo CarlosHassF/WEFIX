@@ -1,84 +1,82 @@
+import { requisicao, requisicaoPaginada } from './api.js'
+import { criarDispositivo, garantirCliente } from './clientesService.js'
+import { paraWhatsapp } from '../utils/statusFicha.js'
+
 const API_URL = '/api/fichas'
 
-// le a resposta como JSON ou texto
-async function lerResposta(response) {
-  const texto = await response.text()
-  if (!texto) return null
-
-  try {
-    return JSON.parse(texto)
-  } catch {
-    return texto
-  }
+export async function listarFichas(filtros = {}) {
+  return requisicaoPaginada(API_URL, filtros)
 }
 
-// adiciona o token nas chamadas que exigem autenticacao
-function obterToken() {
-  const token = localStorage.getItem('token')
-  if (!token) throw new Error('Token não encontrado. Faça login novamente.')
-  return token
+export async function buscarFicha(id) {
+  return requisicao(`${API_URL}/${id}`)
 }
 
-async function requisicao(url, opcoes = {}) {
-  const token = obterToken()
-  const response = await fetch(url, {
-    ...opcoes,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      ...(opcoes.body ? { 'Content-Type': 'application/json' } : {}),
-      ...opcoes.headers,
-    },
-  })
-  const corpo = response.status === 204 ? null : await lerResposta(response)
-
-  if (!response.ok) {
-    throw new Error(corpo?.erro || corpo || `Erro na requisição: ${response.status}`)
-  }
-  return corpo
-}
-
-// GET /fichas — lista as fichas
-export async function listarFichas() {
-  return requisicao(API_URL)
-}
-
-// POST /fichas — cria uma ficha
 export async function criarFicha(dados) {
   return requisicao(API_URL, {
     method: 'POST',
-    body: JSON.stringify({
-      nome_cliente: dados.nome_cliente.trim(),
-      numero_cliente: dados.numero_cliente.trim(),
-      valor_servico: Number(dados.valor_servico),
-      observacao: (dados.observacao || '').trim(),
-      defeito_relatado:(dados.defeito_relatado||'').trim(),
-    }),
+    body: JSON.stringify(dados),
   })
 }
 
-// PUT /fichas/:id — atualiza os dados de uma ficha
+export async function registrarOrdem(dados) {
+  const whatsapp_cliente = paraWhatsapp(dados.numero_cliente)
+  const cliente = await garantirCliente({
+    nome_cliente: dados.nome_cliente.trim(),
+    whatsapp_cliente,
+    email_cliente: (dados.email_cliente || '').trim(),
+  })
+
+  const dispositivo = await criarDispositivo(cliente.id_cliente, {
+    tipo: dados.tipo,
+    marca: dados.marca.trim(),
+    modelo: dados.modelo.trim(),
+    ...(dados.numero_serie?.trim() ? { numero_serie: dados.numero_serie.trim() } : {}),
+  })
+
+  const payload = {
+    id_cliente: cliente.id_cliente,
+    id_dispositivo: dispositivo.id_dispositivo,
+    defeito_relatado: dados.defeito_relatado.trim(),
+  }
+  for (const campo of ['acessorios', 'estado_entrada', 'senha_dispositivo', 'observacao']) {
+    const valor = (dados[campo] || '').trim()
+    if (valor) payload[campo] = valor
+  }
+
+  return criarFicha(payload)
+}
+
 export async function atualizarFicha(id, dados) {
+  const corpo = {}
+  for (const campo of [
+    'defeito_relatado',
+    'acessorios',
+    'estado_entrada',
+    'senha_dispositivo',
+    'observacao',
+    'diagnostico',
+  ]) {
+    if (dados[campo] !== undefined) corpo[campo] = String(dados[campo]).trim()
+  }
+  if (dados.valor_servico !== undefined && dados.valor_servico !== '') {
+    corpo.valor_servico = Number(dados.valor_servico).toFixed(2)
+  }
   return requisicao(`${API_URL}/${id}`, {
     method: 'PUT',
-    body: JSON.stringify({
-      nome_cliente: dados.nome_cliente.trim(),
-      numero_cliente: dados.numero_cliente.trim(),
-      valor_servico: Number(dados.valor_servico),
-      observacao: (dados.observacao || '').trim(),
-      defeito_relatado:(dados.defeito_relatado||'').trim(),
-    }),
+    body: JSON.stringify(corpo),
   })
 }
 
-// PATCH /fichas — atualiza o status de uma ficha
-export async function atualizarStatusFicha(id, status) {
-  return requisicao(API_URL, {
+export async function atualizarStatusFicha(id, status, extras = {}) {
+  const corpo = { status }
+  if (extras.observacao !== undefined) corpo.observacao = extras.observacao
+  if (extras.diagnostico !== undefined) corpo.diagnostico = extras.diagnostico
+  if (extras.valor_servico !== undefined && extras.valor_servico !== '') {
+    corpo.valor_servico = Number(extras.valor_servico).toFixed(2)
+  }
+  return requisicao(`${API_URL}/${id}/status`, {
     method: 'PATCH',
-    body: JSON.stringify({ id_manutencao: id, status }),
+    body: JSON.stringify(corpo),
   })
-}
-
-// DELETE /fichas/:id — exclui uma ficha
-export async function excluirFicha(id) {
-  return requisicao(`${API_URL}/${id}`, { method: 'DELETE' })
 }

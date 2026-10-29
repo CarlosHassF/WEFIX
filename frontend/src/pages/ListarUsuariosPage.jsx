@@ -1,10 +1,7 @@
 import { useEffect, useState } from 'react'
 import UsuariosTabela from '../components/UsuariosTabela.jsx'
-import { listarUsuarios } from '../services/usuariosService.js'
+import { alterarAtivoUsuario, listarUsuarios } from '../services/usuariosService.js'
 
-// enquanto nao existe tela de login, o token e lido do localStorage
-// (faca login no Postman e rode no console do navegador:
-//  localStorage.setItem('token', '<token>'))
 function ListarUsuariosPage() {
   const [usuarios, setUsuarios] = useState([])
   const [carregando, setCarregando] = useState(true)
@@ -14,8 +11,7 @@ function ListarUsuariosPage() {
     setCarregando(true)
     setErro(null)
     try {
-      const token = localStorage.getItem('token')
-      setUsuarios(await listarUsuarios(token))
+      setUsuarios(await listarUsuarios())
     } catch (e) {
       setErro(e.message)
     } finally {
@@ -23,10 +19,18 @@ function ListarUsuariosPage() {
     }
   }
 
-  // [] = roda uma vez, quando a page aparece na tela
   useEffect(() => {
     carregar()
   }, [])
+
+  async function alternarAtivo(usuario) {
+    try {
+      await alterarAtivoUsuario(usuario.id_usuario, !usuario.ativo)
+      await carregar()
+    } catch (e) {
+      setErro(e.message)
+    }
+  }
 
   return (
     <section>
@@ -37,7 +41,9 @@ function ListarUsuariosPage() {
 
       {carregando && <p>Carregando...</p>}
       {erro && <p className="erro">{erro}</p>}
-      {!carregando && !erro && <UsuariosTabela usuarios={usuarios} />}
+      {!carregando && !erro && (
+        <UsuariosTabela usuarios={usuarios} onAlternarAtivo={alternarAtivo} />
+      )}
     </section>
   )
 }

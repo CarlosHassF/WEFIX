@@ -39,7 +39,7 @@ function UsuarioForm({ onSubmit, enviando }) {
 
       <label>
         Senha
-        <input type="password" name="senha" value={dados.senha} onChange={handleChange} required />
+        <input type="password" name="senha" value={dados.senha} onChange={handleChange} minLength={6} required />
       </label>
 
       <label>

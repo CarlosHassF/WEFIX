@@ -2,7 +2,6 @@ import { useState } from 'react'
 import UsuarioForm from '../components/UsuarioForm.jsx'
 import { criarUsuario } from '../services/usuariosService.js'
 
-// page: junta componente + service e cuida das mensagens
 function CriarUsuarioPage() {
   const [enviando, setEnviando] = useState(false)
   const [mensagem, setMensagem] = useState(null)
@@ -15,7 +14,7 @@ function CriarUsuarioPage() {
 
     try {
       const resposta = await criarUsuario(dados)
-      setMensagem(resposta)
+      setMensagem(`Usuário ${resposta.nome_usuario} criado com cargo ${resposta.cargo_usuario}.`)
       return true
     } catch (e) {
       setErro(e.message)

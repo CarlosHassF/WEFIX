@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import FichaForm from '../components/FichaForm.jsx'
-import { criarFicha } from '../services/fichasService.js'
+import { registrarOrdem } from '../services/fichasService.js'
 
 function CriarFichaPage() {
   const [enviando, setEnviando] = useState(false)
@@ -13,8 +13,8 @@ function CriarFichaPage() {
     setErro(null)
 
     try {
-      const resposta = await criarFicha(dados)
-      setMensagem(resposta)
+      const resposta = await registrarOrdem(dados)
+      setMensagem(`Ordem #${resposta.id_manutencao} registrada com status aberta.`)
       return true
     } catch (e) {
       setErro(e.message)
@@ -29,7 +29,7 @@ function CriarFichaPage() {
       <h2>Nova ordem de serviço</h2>
       {mensagem && <p className="sucesso">{mensagem}</p>}
       {erro && <p className="erro">{erro}</p>}
-      <FichaForm onSubmit={handleCriar} enviando={enviando} />
+      <FichaForm onSubmit={handleCriar} enviando={enviando} modo="criar" />
     </section>
   )
 }

@@ -10,8 +10,8 @@ import { obterUsuario, logout } from './services/authService.js'
 
 // define quais cargos podem acessar cada tela
 const paginas = [
-  { id: 'kanban', nome: 'Kanban', cargos: ['admin', 'tecnico'] },
-  { id: 'fichas', nome: 'Listar ordens de servico', cargos: ['admin', 'tecnico'] },
+  { id: 'kanban', nome: 'Kanban', cargos: ['admin', 'tecnico', 'atendente'] },
+  { id: 'fichas', nome: 'Listar ordens de servico', cargos: ['admin', 'tecnico', 'atendente'] },
   { id: 'criar-ficha', nome: 'Registrar ordem', cargos: ['admin', 'atendente'] },
   { id: 'listar', nome: 'Listar usuarios', cargos: ['admin'] },
   { id: 'criar', nome: 'Criar usuario', cargos: ['admin'] },

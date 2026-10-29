@@ -212,6 +212,18 @@
   max-width: 400px;
 }
 
+.form-largo {
+  max-width: 560px;
+}
+
+.form-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 12px 0;
+  text-align: left;
+}
+
 .form label {
   display: flex;
   flex-direction: column;

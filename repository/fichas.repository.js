@@ -32,7 +32,9 @@ export async function listarFichas({
   const fichas = await prisma.ficha.findMany({
     where,
     include: {
-      cliente: { select: { id_cliente: true, nome_cliente: true } },
+      cliente: {
+        select: { id_cliente: true, nome_cliente: true, whatsapp_cliente: true },
+      },
       dispositivo: {
         select: { id_dispositivo: true, tipo: true, marca: true, modelo: true },
       },

@@ -39,7 +39,7 @@
 /* colunas e cartões do Kanban */
 .kanban-colunas {
   display: grid;
-  grid-template-columns: repeat(5, minmax(230px, 1fr));
+  grid-template-columns: repeat(7, minmax(210px, 1fr));
   gap: 12px;
   align-items: start;
   overflow-x: auto;
@@ -143,6 +143,28 @@
   font-weight: 600;
 }
 
+.kanban-atrasada {
+  color: #a52828;
+  font-weight: 600;
+}
+
+.kanban-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.kanban-acoes button {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--accent-bg);
+  color: var(--text-h);
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+
 /* estado de movimentação de uma ficha */
 .kanban-movendo {
   opacity: 0.55;
@@ -175,6 +197,6 @@
   }
 
   .kanban-colunas {
-    grid-template-columns: repeat(5, minmax(250px, 1fr));
+    grid-template-columns: repeat(7, minmax(220px, 1fr));
   }
 }

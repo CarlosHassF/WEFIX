@@ -1,18 +1,14 @@
-const statusLabels = {
-  novo: 'Novo',
-  em_manutencao: 'Em manutenção',
-  entregue: 'Entregue',
-  cancelado: 'Cancelado',
-  concertado: 'Consertado',
-}
+import {
+  STATUS_LABELS,
+  rotuloAcao,
+  descricaoDispositivo,
+  formatarTelefone,
+  formatarValor,
+  nomeCliente,
+  telefoneCliente,
+} from '../utils/statusFicha.js'
 
-// formata o valor do serviço para R$ e trata valores nulos 
-function formatarValor(valor) {
-  if (valor == null || valor === '') return 'Não informado'
-  return Number(valor).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL',})
-}
-
-function FichasTabela({ fichas, onEditar, onExcluir }) {
+function FichasTabela({ fichas, onEditar, onAcao, podeEditar, acoesDe }) {
   return (
     <div className="tabela-container">
       <table className="tabela">
@@ -20,25 +16,47 @@ function FichasTabela({ fichas, onEditar, onExcluir }) {
           <tr>
             <th>Número</th>
             <th>Cliente</th>
-            <th>Telefone</th>
-            <th>Valor do serviço</th>
+            <th>WhatsApp</th>
+            <th>Dispositivo</th>
+            <th>Valor</th>
             <th>Status</th>
-            <th>Observações</th>
+            <th>Defeito</th>
             <th>Ações</th>
           </tr>
         </thead>
         <tbody>
-          {fichas.map((ficha) => (
-            <tr key={String(ficha.id_manutencao)}>
-              <td>{String(ficha.id_manutencao ?? '—')}</td>
-              <td>{ficha.nome_cliente || 'Não informado'}</td>
-              <td>{ficha.numero_cliente || 'Não informado'}</td>
-              <td>{formatarValor(ficha.valor_servico)}</td>
-              <td><span className={`status status-${ficha.status || 'desconhecido'}`}>{statusLabels[ficha.status] || 'Desconhecido'}</span></td>
-              <td className="observacao">{ficha.observacao || '—'}</td>
-              <td><button type="button" onClick={() => onEditar(ficha)}>Editar</button> <button type="button" onClick={() => onExcluir(ficha)}>Excluir</button></td>
-            </tr>
-          ))}
+          {fichas.map((ficha) => {
+            const acoes = acoesDe ? acoesDe(ficha) : []
+            const editar = podeEditar ? podeEditar(ficha) : false
+            return (
+              <tr key={String(ficha.id_manutencao)}>
+                <td>{String(ficha.id_manutencao ?? '—')}</td>
+                <td>{nomeCliente(ficha)}</td>
+                <td>{formatarTelefone(telefoneCliente(ficha))}</td>
+                <td>{descricaoDispositivo(ficha)}</td>
+                <td>{formatarValor(ficha.valor_servico)}</td>
+                <td>
+                  <span className={`status status-${ficha.status || 'desconhecido'}`}>
+                    {STATUS_LABELS[ficha.status] || 'Desconhecido'}
+                  </span>
+                  {ficha.etapa_atual?.expirado ? ' (atrasada)' : ''}
+                </td>
+                <td className="observacao">{ficha.defeito_relatado || '—'}</td>
+                <td>
+                  {editar && (
+                    <button type="button" onClick={() => onEditar(ficha)}>
+                      Editar
+                    </button>
+                  )}
+                  {acoes.map((acao) => (
+                    <button key={acao.para} type="button" onClick={() => onAcao(ficha, acao)}>
+                      {rotuloAcao(acao)}
+                    </button>
+                  ))}
+                </td>
+              </tr>
+            )
+          })}
         </tbody>
       </table>
     </div>
