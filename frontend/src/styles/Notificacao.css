@@ -1,0 +1,84 @@
+.notificacao {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(420px, calc(100vw - 32px));
+  box-sizing: border-box;
+  padding: 14px 16px;
+  border: 1px solid;
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text-h);
+  box-shadow: var(--shadow);
+  animation: entrar-notificacao 0.2s ease-out;
+}
+
+.notificacao p {
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+
+.notificacao-icone {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  color: white;
+  font-weight: 700;
+}
+
+.notificacao button {
+  flex: none;
+  padding: 2px 7px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.25rem;
+}
+
+.notificacao-sucesso {
+  border-color: color-mix(in oklab, #18894d 40%, var(--surface));
+}
+
+.notificacao-sucesso .notificacao-icone {
+  background: #18894d;
+}
+
+.notificacao-erro {
+  border-color: color-mix(in oklab, var(--erro) 45%, var(--surface));
+}
+
+.notificacao-erro .notificacao-icone {
+  background: var(--erro);
+}
+
+@keyframes entrar-notificacao {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 520px) {
+  .notificacao {
+    top: 12px;
+    right: 12px;
+    width: calc(100vw - 24px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notificacao {
+    animation: none;
+  }
+}

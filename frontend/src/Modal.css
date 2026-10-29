@@ -1,0 +1,90 @@
+/* Caixa do modal genérico.
+   O fundo escuro (.modal-overlay) e a animação descer-modal ficam no App.css. */
+.modal {
+  width: 100%;
+  max-width: 520px;
+  max-height: min(90vh, 900px);
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  animation: descer-modal 0.3s ease-out;
+}
+
+.modal-largo {
+  max-width: 760px;
+}
+
+.modal-cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.modal-cabecalho h3 {
+  margin: 0;
+}
+
+.modal-fechar {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  padding: 2px 10px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.5rem;
+  line-height: 1.2;
+}
+
+/* um formulário dentro do modal não precisa do painel com borda */
+.modal .form {
+  max-width: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.form-acoes {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.form-acoes button[type='submit'] {
+  order: 1;
+  min-width: 150px;
+}
+
+.form-acoes button[type='button'] {
+  min-width: 110px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal {
+    animation: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .modal {
+    padding: 18px;
+  }
+
+  .form-acoes {
+    flex-direction: column;
+  }
+
+  .form-acoes button {
+    width: 100%;
+    min-width: 0;
+  }
+}

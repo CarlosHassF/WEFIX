@@ -1,22 +1,58 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap');
+
+/* ==========================================================
+   WEFIX — tokens, base e controles
+   O azul da marca é o --accent. As cores dos status das ordens
+   (App.css) são calculadas a partir destes tokens, então claro
+   e escuro funcionam juntos.
+   ========================================================== */
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
+  /* superfícies e linhas */
+  --bg: #f3f6fb;
+  --surface: #ffffff;
+  --surface-2: #eaf0fa;
+  --line: #d5deee;
+  --line-strong: #b9c7e2;
+
+  /* texto */
+  --text: #3b4a66;
+  --text-h: #0b1f44;
+  --muted: #5d6c88;
+
+  /* azul da marca */
+  --accent: #1f5fd6;
+  --accent-hover: #1a4fb4;
+  --accent-bg: rgba(31, 95, 214, 0.1);
+  --accent-border: rgba(31, 95, 214, 0.45);
+  --on-accent: #ffffff;
+
+  /* estados */
+  --erro: #c62828;
+  --sucesso: #2e7d32;
+  --perigo: #c93636;
+  --perigo-hover: #a82b2b;
+
+  /* quanto do tom de cada status entra no texto e no fundo do selo */
+  --st-text-mix: 78%;
+  --st-bg-mix: 14%;
+
   --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+    rgba(16, 42, 94, 0.2) 0 16px 32px -8px,
+    rgba(16, 42, 94, 0.08) 0 4px 8px -2px;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  --radius-s: 6px;
+  --radius-m: 10px;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
+  /* nomes antigos do template, mantidos para o que ainda usar */
+  --border: var(--line);
+  --code-bg: var(--surface-2);
+  --social-bg: var(--surface-2);
+
+  --sans: 'Roboto', system-ui, 'Segoe UI', sans-serif;
+  --heading: var(--sans);
+  --mono: ui-monospace, 'SF Mono', Consolas, monospace;
+
+  font: 15px/1.5 var(--sans);
   color-scheme: light dark;
   color: var(--text);
   background: var(--bg);
@@ -24,206 +60,189 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
+    --bg: #0a1224;
+    --surface: #101b33;
+    --surface-2: #15244a;
+    --line: #213459;
+    --line-strong: #2f4a7c;
 
-  #social .button-icon {
-    filter: invert(1) brightness(2);
+    --text: #9fb0cc;
+    --text-h: #eef3fc;
+    --muted: #7f92b3;
+
+    --accent: #6aa3ff;
+    --accent-hover: #8bb8ff;
+    --accent-bg: rgba(106, 163, 255, 0.15);
+    --accent-border: rgba(106, 163, 255, 0.5);
+    --on-accent: #0a1224;
+
+    --erro: #ff8a80;
+    --sucesso: #7ddc8a;
+
+    --st-text-mix: 55%;
+    --st-bg-mix: 20%;
+
+    --shadow:
+      rgba(0, 0, 0, 0.55) 0 16px 32px -8px, rgba(0, 0, 0, 0.3) 0 4px 8px -2px;
   }
 }
 
+@media (max-width: 768px) {
+  :root {
+    font-size: 16px;
+  }
+}
+
+/* ---------- base ---------- */
 body {
   margin: 0;
 }
 
-
 #root {
   width: 100%;
-  max-width: none;
-  margin: 0;
-  text-align: left;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+  text-align: left;
 }
 
-
 h1,
-h2 {
+h2,
+h3 {
   font-family: var(--heading);
-  font-weight: 500;
   color: var(--text-h);
 }
 
+/* o h1 é a marca */
 h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin: 0 0 16px;
+  color: var(--accent);
 }
+
 h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  margin: 0 0 16px;
 }
+
+h3 {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 0 0 8px;
+}
+
 p {
   margin: 0;
 }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
+a {
+  color: var(--accent);
 }
 
 code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
+  font-family: var(--mono);
+  font-size: 0.9em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--text-h);
   background: var(--code-bg);
 }
 
-/* Validação dos campos dos formulários */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------- botões ---------- */
+button {
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  padding: 9px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-s);
+  background: var(--surface);
+  color: var(--text-h);
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
+}
+
+button:hover:not(:disabled) {
+  background: var(--accent-bg);
+  border-color: var(--accent-border);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* ---------- campos ---------- */
+/* :where() zera a especificidade, para .campo-invalido e afins sempre vencerem */
+:where(input:not([type='checkbox']):not([type='radio']), select, textarea) {
+  box-sizing: border-box;
+  width: 100%;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 400;
+  padding: 9px 12px;
+  color: var(--text-h);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-s);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 88px;
+  line-height: 1.45;
+}
+
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: var(--accent);
+}
+
+::placeholder {
+  color: var(--muted);
+  opacity: 0.8;
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+  border-color: var(--accent);
+}
+
+/* ---------- validação dos formulários ---------- */
 .campo-invalido {
-  border: 1px solid #dc2626 !important;
-  outline-color: #dc2626;
+  border-color: var(--erro);
+}
+
+.campo-invalido:focus-visible {
+  outline-color: var(--erro);
+  border-color: var(--erro);
 }
 
 .mensagem-erro {
   display: block;
-  color: #dc2626;
-  font-size: 0.85rem;
-  margin-top: 4px;
-}
-
-.campo-invalido:focus {
-  outline: 2px solid rgba(220, 38, 38, 0.2);
-}
-
-/* tabela de ordens de serviço */
-.tabela-container {
-  width: 100%;
-  overflow-x: auto;
-  margin-top: 16px;
-  border-radius: 8px;
-}
-
-.tabela {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-}
-
-.tabela th,
-.tabela td {
-  padding: 12px 16px;
-  border-bottom: 1px solid #e5e7eb;
-  vertical-align: top;
-}
-
-.tabela th {
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.tabela tbody tr:hover {
-  background-color: #3c3c3c
-}
-
-.tabela-legenda {
-  padding: 12px 0;
-  text-align: left;
-  font-weight: 600;
-}
-
-.observacao {
-  min-width: 160px;
-  max-width: 280px;
-  overflow-wrap: anywhere;
-}
-
-/*visual dos status das OS */
-.status {
-  display: inline-block;
-  padding: 4px 8px;
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  white-space: nowrap;
-  background-color: #29232f;
-  color: #e5d9f2;
-}
-
-.status-novo {
-  background-color: #29233b;
-  border-color: #51406f;
-  color: #d6baff;
-}
-
-.status-em_manutencao {
-  background-color: #382c1b;
-  border-color: #6b5128;
-  color: #f4cd83;
-}
-
-.status-concertado {
-  background-color: #1e3329;
-  border-color: #315d43;
-  color: #a5e6bc;
-}
-
-.status-entregue {
-  background-color: #1e2b33;
-  border-color: #314c5d;
-  color: #a5e6e5;
-}
-
-.status-cancelado {
-  background-color: #3a242b;
-  border-color: #70404b;
-  color: #f2a8b5;
-}
-
-/* Ajustes da tabela para telas menores */
-@media (max-width: 768px) {
-  .tabela th,
-  .tabela td {
-    padding: 10px 12px;
-  }
-}
-
-/*Evita que o telefone quebre em duas linhas */
-.tabela th:nth-child(3),
-.tabela td:nth-child(3) {
-  min-width: 155px;
-  white-space: nowrap;
+  color: var(--erro);
+  font-size: 0.8125rem;
+  font-weight: 400;
 }

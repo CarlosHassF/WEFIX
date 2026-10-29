@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { buscarClientePorEmail } from '../services/clientesService.js'
 import { TIPOS_DISPOSITIVO, formatarTelefone } from '../utils/statusFicha.js'
 
 const VAZIO = {
@@ -23,7 +24,9 @@ function preencher(fichaInicial, modo) {
   return {
     ...VAZIO,
     nome_cliente: fichaInicial.cliente?.nome_cliente || '',
-    numero_cliente: formatarTelefone(fichaInicial.cliente?.whatsapp_cliente || ''),
+    numero_cliente: formatarTelefone(
+      fichaInicial.cliente?.whatsapp_cliente || ''
+    ),
     defeito_relatado: fichaInicial.defeito_relatado || '',
     acessorios: fichaInicial.acessorios || '',
     estado_entrada: fichaInicial.estado_entrada || '',
@@ -31,7 +34,9 @@ function preencher(fichaInicial, modo) {
     observacao: fichaInicial.observacao || '',
     diagnostico: fichaInicial.diagnostico || '',
     valor_servico:
-      fichaInicial.valor_servico != null ? String(fichaInicial.valor_servico).replace('.', ',') : '',
+      fichaInicial.valor_servico != null
+        ? String(fichaInicial.valor_servico).replace('.', ',')
+        : '',
     tipo: fichaInicial.dispositivo?.tipo || 'notebook',
     marca: fichaInicial.dispositivo?.marca || '',
     modelo: fichaInicial.dispositivo?.modelo || '',
@@ -40,24 +45,80 @@ function preencher(fichaInicial, modo) {
   }
 }
 
-function FichaForm({ onSubmit, enviando, fichaInicial = null, aoCancelar, modo = 'criar' }) {
+function FichaForm({
+  onSubmit,
+  enviando,
+  fichaInicial = null,
+  aoCancelar,
+  modo = 'criar',
+}) {
   const [dados, setDados] = useState(() => preencher(fichaInicial, modo))
   const [erros, setErros] = useState({})
+  const [buscaCliente, setBuscaCliente] = useState('')
   const diagnostico = modo === 'diagnostico'
   const criacao = modo === 'criar'
 
+  useEffect(() => {
+    if (!criacao) return undefined
+
+    const email = dados.email_cliente.trim().toLocaleLowerCase()
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return undefined
+    }
+
+    let cancelada = false
+    const timer = setTimeout(async () => {
+      setBuscaCliente('buscando')
+      try {
+        const cliente = await buscarClientePorEmail(email)
+        if (cancelada) return
+
+        if (!cliente) {
+          setBuscaCliente('nao-encontrado')
+          return
+        }
+
+        setDados((atuais) => ({
+          ...atuais,
+          nome_cliente: cliente.nome_cliente || atuais.nome_cliente,
+          numero_cliente: cliente.whatsapp_cliente
+            ? formatarTelefone(cliente.whatsapp_cliente)
+            : atuais.numero_cliente,
+        }))
+        setErros((atuais) => ({
+          ...atuais,
+          nome_cliente: '',
+          numero_cliente: '',
+        }))
+        setBuscaCliente('encontrado')
+      } catch (erro) {
+        if (cancelada) return
+        console.error('Erro ao buscar cliente pelo email:', erro)
+        setBuscaCliente('erro')
+      }
+    }, 350)
+
+    return () => {
+      cancelada = true
+      clearTimeout(timer)
+    }
+  }, [criacao, dados.email_cliente])
+
   function validarCampo(name, value) {
     if (diagnostico) {
-      if (name === 'diagnostico' && !value.trim()) return 'Informe o diagnóstico.'
+      if (name === 'diagnostico' && !value.trim())
+        return 'Informe o diagnóstico.'
       if (name === 'valor_servico') {
         const valor = Number(String(value).replace(',', '.'))
         if (!String(value).trim()) return 'Informe o valor do serviço.'
-        if (!Number.isFinite(valor) || valor < 0) return 'Informe um valor válido.'
+        if (!Number.isFinite(valor) || valor < 0)
+          return 'Informe um valor válido.'
       }
       return ''
     }
 
-    if (name === 'nome_cliente' && criacao && !value.trim()) return 'Informe o nome do cliente.'
+    if (name === 'nome_cliente' && criacao && !value.trim())
+      return 'Informe o nome do cliente.'
     if (name === 'numero_cliente' && criacao) {
       const digitos = value.replace(/\D/g, '')
       if (!value.trim()) return 'Informe o WhatsApp do cliente.'
@@ -66,8 +127,10 @@ function FichaForm({ onSubmit, enviando, fichaInicial = null, aoCancelar, modo =
       }
     }
     if (name === 'marca' && criacao && !value.trim()) return 'Informe a marca.'
-    if (name === 'modelo' && criacao && !value.trim()) return 'Informe o modelo.'
-    if (name === 'defeito_relatado' && !value.trim()) return 'Informe o defeito relatado.'
+    if (name === 'modelo' && criacao && !value.trim())
+      return 'Informe o modelo.'
+    if (name === 'defeito_relatado' && !value.trim())
+      return 'Informe o defeito relatado.'
     return ''
   }
 
@@ -77,13 +140,18 @@ function FichaForm({ onSubmit, enviando, fichaInicial = null, aoCancelar, modo =
     if (name === 'numero_cliente') {
       const numeros = value.replace(/\D/g, '').slice(0, 11)
       novoValor = numeros
-      if (numeros.length > 2) novoValor = `(${numeros.slice(0, 2)}) ${numeros.slice(2)}`
+      if (numeros.length > 2)
+        novoValor = `(${numeros.slice(0, 2)}) ${numeros.slice(2)}`
       if (numeros.length > 7) {
         novoValor = `(${numeros.slice(0, 2)}) ${numeros.slice(2, 7)}-${numeros.slice(7)}`
       }
     }
-    setDados({ ...dados, [name]: novoValor })
-    setErros({ ...erros, [name]: validarCampo(name, novoValor) })
+    if (name === 'email_cliente') setBuscaCliente('')
+    setDados((atuais) => ({ ...atuais, [name]: novoValor }))
+    setErros((atuais) => ({
+      ...atuais,
+      [name]: validarCampo(name, novoValor),
+    }))
   }
 
   async function handleSubmit(e) {
@@ -91,19 +159,32 @@ function FichaForm({ onSubmit, enviando, fichaInicial = null, aoCancelar, modo =
     const campos = diagnostico
       ? ['diagnostico', 'valor_servico']
       : criacao
-        ? ['nome_cliente', 'numero_cliente', 'marca', 'modelo', 'defeito_relatado']
+        ? [
+            'nome_cliente',
+            'numero_cliente',
+            'marca',
+            'modelo',
+            'defeito_relatado',
+          ]
         : ['defeito_relatado']
-    const novosErros = Object.fromEntries(campos.map((campo) => [campo, validarCampo(campo, dados[campo])]))
+    const novosErros = Object.fromEntries(
+      campos.map((campo) => [campo, validarCampo(campo, dados[campo])])
+    )
     setErros(novosErros)
     if (Object.values(novosErros).some(Boolean)) return
 
     const payload = { ...dados }
     if (diagnostico) {
-      payload.valor_servico = Number(String(dados.valor_servico).replace(',', '.'))
+      payload.valor_servico = Number(
+        String(dados.valor_servico).replace(',', '.')
+      )
     }
     const ok = await onSubmit(payload)
     if (ok) {
-      if (criacao) setDados(VAZIO)
+      if (criacao) {
+        setDados(VAZIO)
+        setBuscaCliente('')
+      }
       setErros({})
     }
   }
@@ -123,7 +204,9 @@ function FichaForm({ onSubmit, enviando, fichaInicial = null, aoCancelar, modo =
               aria-invalid={Boolean(erros.nome_cliente)}
               className={erros.nome_cliente ? 'campo-invalido' : ''}
             />
-            {erros.nome_cliente && <span className="mensagem-erro">{erros.nome_cliente}</span>}
+            {erros.nome_cliente && (
+              <span className="mensagem-erro">{erros.nome_cliente}</span>
+            )}
           </label>
           <label>
             WhatsApp do cliente *
@@ -138,7 +221,9 @@ function FichaForm({ onSubmit, enviando, fichaInicial = null, aoCancelar, modo =
               aria-invalid={Boolean(erros.numero_cliente)}
               className={erros.numero_cliente ? 'campo-invalido' : ''}
             />
-            {erros.numero_cliente && <span className="mensagem-erro">{erros.numero_cliente}</span>}
+            {erros.numero_cliente && (
+              <span className="mensagem-erro">{erros.numero_cliente}</span>
+            )}
           </label>
           <label>
             Email do cliente
@@ -149,6 +234,29 @@ function FichaForm({ onSubmit, enviando, fichaInicial = null, aoCancelar, modo =
               onChange={handleChange}
               maxLength={100}
             />
+            {buscaCliente === 'buscando' && (
+              <span className="cliente-busca-status" role="status">
+                Buscando cliente...
+              </span>
+            )}
+            {buscaCliente === 'encontrado' && (
+              <span
+                className="cliente-busca-status cliente-busca-sucesso"
+                role="status"
+              >
+                Cliente encontrado; nome e WhatsApp preenchidos.
+              </span>
+            )}
+            {buscaCliente === 'nao-encontrado' && (
+              <span className="cliente-busca-status" role="status">
+                Cliente não encontrado. Preencha os dados manualmente.
+              </span>
+            )}
+            {buscaCliente === 'erro' && (
+              <span className="cliente-busca-status mensagem-erro" role="alert">
+                Não foi possível consultar o cliente. Tente novamente.
+              </span>
+            )}
           </label>
           <label>
             Tipo do dispositivo *
@@ -170,7 +278,9 @@ function FichaForm({ onSubmit, enviando, fichaInicial = null, aoCancelar, modo =
               required
               className={erros.marca ? 'campo-invalido' : ''}
             />
-            {erros.marca && <span className="mensagem-erro">{erros.marca}</span>}
+            {erros.marca && (
+              <span className="mensagem-erro">{erros.marca}</span>
+            )}
           </label>
           <label>
             Modelo *
@@ -182,11 +292,18 @@ function FichaForm({ onSubmit, enviando, fichaInicial = null, aoCancelar, modo =
               required
               className={erros.modelo ? 'campo-invalido' : ''}
             />
-            {erros.modelo && <span className="mensagem-erro">{erros.modelo}</span>}
+            {erros.modelo && (
+              <span className="mensagem-erro">{erros.modelo}</span>
+            )}
           </label>
           <label>
             Número de série / IMEI
-            <input name="numero_serie" value={dados.numero_serie} onChange={handleChange} maxLength={50} />
+            <input
+              name="numero_serie"
+              value={dados.numero_serie}
+              onChange={handleChange}
+              maxLength={50}
+            />
           </label>
         </>
       )}
@@ -210,7 +327,9 @@ function FichaForm({ onSubmit, enviando, fichaInicial = null, aoCancelar, modo =
               required
               className={erros.diagnostico ? 'campo-invalido' : ''}
             />
-            {erros.diagnostico && <span className="mensagem-erro">{erros.diagnostico}</span>}
+            {erros.diagnostico && (
+              <span className="mensagem-erro">{erros.diagnostico}</span>
+            )}
           </label>
           <label>
             Valor do serviço (R$) *
@@ -223,7 +342,9 @@ function FichaForm({ onSubmit, enviando, fichaInicial = null, aoCancelar, modo =
               required
               className={erros.valor_servico ? 'campo-invalido' : ''}
             />
-            {erros.valor_servico && <span className="mensagem-erro">{erros.valor_servico}</span>}
+            {erros.valor_servico && (
+              <span className="mensagem-erro">{erros.valor_servico}</span>
+            )}
           </label>
         </>
       ) : (
@@ -239,35 +360,65 @@ function FichaForm({ onSubmit, enviando, fichaInicial = null, aoCancelar, modo =
               required
               className={erros.defeito_relatado ? 'campo-invalido' : ''}
             />
-            {erros.defeito_relatado && <span className="mensagem-erro">{erros.defeito_relatado}</span>}
+            {erros.defeito_relatado && (
+              <span className="mensagem-erro">{erros.defeito_relatado}</span>
+            )}
           </label>
           <label>
             Acessórios
-            <input name="acessorios" value={dados.acessorios} onChange={handleChange} maxLength={200} />
+            <input
+              name="acessorios"
+              value={dados.acessorios}
+              onChange={handleChange}
+              maxLength={200}
+            />
           </label>
           <label>
             Estado de entrada
-            <textarea name="estado_entrada" value={dados.estado_entrada} onChange={handleChange} maxLength={400} rows={2} />
+            <textarea
+              name="estado_entrada"
+              value={dados.estado_entrada}
+              onChange={handleChange}
+              maxLength={400}
+              rows={2}
+            />
           </label>
           <label>
             Senha do dispositivo
-            <input name="senha_dispositivo" value={dados.senha_dispositivo} onChange={handleChange} maxLength={100} />
+            <input
+              name="senha_dispositivo"
+              value={dados.senha_dispositivo}
+              onChange={handleChange}
+              maxLength={100}
+            />
           </label>
           <label>
             Observações
-            <textarea name="observacao" value={dados.observacao} onChange={handleChange} maxLength={400} rows={3} />
+            <textarea
+              name="observacao"
+              value={dados.observacao}
+              onChange={handleChange}
+              maxLength={400}
+              rows={3}
+            />
           </label>
         </>
       )}
 
-      <button type="submit" disabled={enviando}>
-        {enviando ? 'Salvando...' : fichaInicial ? 'Salvar alterações' : 'Registrar ordem de serviço'}
-      </button>
-      {aoCancelar && (
-        <button type="button" onClick={aoCancelar} disabled={enviando}>
-          Cancelar edição
+      <div className="form-acoes">
+        <button type="submit" disabled={enviando}>
+          {enviando
+            ? 'Salvando...'
+            : fichaInicial
+              ? 'Salvar alterações'
+              : 'Registrar ordem de serviço'}
         </button>
-      )}
+        {aoCancelar && (
+          <button type="button" onClick={aoCancelar} disabled={enviando}>
+            Cancelar
+          </button>
+        )}
+      </div>
     </form>
   )
 }

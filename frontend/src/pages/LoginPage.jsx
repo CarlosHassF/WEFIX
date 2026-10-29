@@ -25,19 +25,37 @@ function LoginPage({ onLogin }) {
   }
 
   return (
-    <section>
-      <h2>Entrar</h2>
+    <section className="login">
+      <span className="login-marca" aria-hidden="true">
+        W
+      </span>
+      <h2>Bem-vindo(a), realize o login abaixo</h2>
       {erro && <p className="mensagem-erro">{erro}</p>}
       <form className="form" onSubmit={handleSubmit}>
         <label>
           Email
-          <input type="email" name="email_usuario" value={dados.email_usuario} onChange={handleChange} maxLength={100} required />
+          <input
+            type="email"
+            name="email_usuario"
+            value={dados.email_usuario}
+            onChange={handleChange}
+            maxLength={100}
+            required
+          />
         </label>
         <label>
           Senha
-          <input type="password" name="senha" value={dados.senha} onChange={handleChange} required />
+          <input
+            type="password"
+            name="senha"
+            value={dados.senha}
+            onChange={handleChange}
+            required
+          />
         </label>
-        <button type="submit" disabled={enviando}>{enviando ? 'Entrando...' : 'Entrar'}</button>
+        <button type="submit" disabled={enviando}>
+          {enviando ? 'Entrando...' : 'Entrar'}
+        </button>
       </form>
     </section>
   )

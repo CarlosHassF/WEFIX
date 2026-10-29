@@ -7,6 +7,7 @@ export async function listarClientes({ busca, skip, take }) {
           OR: [
             { nome_cliente: { contains: busca, mode: 'insensitive' } },
             { whatsapp_cliente: { contains: busca } },
+            { email_cliente: { contains: busca, mode: 'insensitive' } },
           ],
         }
       : undefined,

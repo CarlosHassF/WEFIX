@@ -63,8 +63,11 @@ test('técnico não cria, mas lista', async () => {
   assert.equal(corpo.length, 1)
 })
 
-test('busca por parte do nome ou do whatsapp', async () => {
-  await atendente.post('/clientes', maria)
+test('busca por parte do nome, whatsapp ou email', async () => {
+  await atendente.post('/clientes', {
+    ...maria,
+    email_cliente: 'maria@example.com',
+  })
   await atendente.post('/clientes', {
     nome_cliente: 'João',
     whatsapp_cliente: '5521888888888',
@@ -78,6 +81,11 @@ test('busca por parte do nome ou do whatsapp', async () => {
   assert.deepEqual(
     fone.corpo.map((c) => c.nome_cliente),
     ['João']
+  )
+  const email = await atendente.get('/clientes?busca=MARIA@EXAMPLE')
+  assert.deepEqual(
+    email.corpo.map((c) => c.nome_cliente),
+    ['Maria Silva']
   )
 })
 

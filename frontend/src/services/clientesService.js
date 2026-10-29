@@ -4,6 +4,17 @@ export async function listarClientes(busca) {
   return requisicaoPaginada('/api/clientes', busca ? { busca } : {})
 }
 
+export async function buscarClientePorEmail(email) {
+  const normalizado = email.trim().toLocaleLowerCase()
+  const encontrados = await listarClientes(normalizado)
+  return (
+    encontrados.find(
+      (cliente) =>
+        cliente.email_cliente?.trim().toLocaleLowerCase() === normalizado
+    ) || null
+  )
+}
+
 export async function criarCliente(dados) {
   return requisicao('/api/clientes', {
     method: 'POST',
@@ -22,9 +33,15 @@ export async function criarDispositivo(idCliente, dados) {
   })
 }
 
-export async function garantirCliente({ nome_cliente, whatsapp_cliente, email_cliente }) {
+export async function garantirCliente({
+  nome_cliente,
+  whatsapp_cliente,
+  email_cliente,
+}) {
   const encontrados = await listarClientes(whatsapp_cliente)
-  const existente = encontrados.find((cliente) => cliente.whatsapp_cliente === whatsapp_cliente)
+  const existente = encontrados.find(
+    (cliente) => cliente.whatsapp_cliente === whatsapp_cliente
+  )
   if (existente) return existente
 
   try {
@@ -36,7 +53,9 @@ export async function garantirCliente({ nome_cliente, whatsapp_cliente, email_cl
   } catch (erro) {
     if (!String(erro.message).toLowerCase().includes('duplicado')) throw erro
     const novamente = await listarClientes(whatsapp_cliente)
-    const duplicado = novamente.find((cliente) => cliente.whatsapp_cliente === whatsapp_cliente)
+    const duplicado = novamente.find(
+      (cliente) => cliente.whatsapp_cliente === whatsapp_cliente
+    )
     if (duplicado) return duplicado
     throw erro
   }

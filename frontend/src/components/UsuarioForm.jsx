@@ -11,7 +11,8 @@ const VAZIO = {
 
 // formulario controlado: cada input le e escreve no estado "dados"
 // quem usa o componente decide o que fazer no envio via prop onSubmit
-function UsuarioForm({ onSubmit, enviando }) {
+// aoCancelar e opcional: se vier, aparece o botao de cancelar (usado no modal)
+function UsuarioForm({ onSubmit, enviando, aoCancelar }) {
   const [dados, setDados] = useState(VAZIO)
 
   function handleChange(e) {
@@ -29,22 +30,46 @@ function UsuarioForm({ onSubmit, enviando }) {
     <form className="form" onSubmit={handleSubmit}>
       <label>
         Nome
-        <input name="nome_usuario" value={dados.nome_usuario} onChange={handleChange} maxLength={100} required />
+        <input
+          name="nome_usuario"
+          value={dados.nome_usuario}
+          onChange={handleChange}
+          maxLength={100}
+          required
+        />
       </label>
 
       <label>
         Email
-        <input type="email" name="email_usuario" value={dados.email_usuario} onChange={handleChange} maxLength={100} required />
+        <input
+          type="email"
+          name="email_usuario"
+          value={dados.email_usuario}
+          onChange={handleChange}
+          maxLength={100}
+          required
+        />
       </label>
 
       <label>
         Senha
-        <input type="password" name="senha" value={dados.senha} onChange={handleChange} minLength={6} required />
+        <input
+          type="password"
+          name="senha"
+          value={dados.senha}
+          onChange={handleChange}
+          minLength={6}
+          required
+        />
       </label>
 
       <label>
         Cargo
-        <select name="cargo_usuario" value={dados.cargo_usuario} onChange={handleChange}>
+        <select
+          name="cargo_usuario"
+          value={dados.cargo_usuario}
+          onChange={handleChange}
+        >
           {CARGOS.map((cargo) => (
             <option key={cargo} value={cargo}>
               {cargo}
@@ -53,9 +78,16 @@ function UsuarioForm({ onSubmit, enviando }) {
         </select>
       </label>
 
-      <button type="submit" disabled={enviando}>
-        {enviando ? 'Salvando...' : 'Criar usuario'}
-      </button>
+      <div className="form-acoes">
+        <button type="submit" disabled={enviando}>
+          {enviando ? 'Salvando...' : 'Criar usuário'}
+        </button>
+        {aoCancelar && (
+          <button type="button" onClick={aoCancelar} disabled={enviando}>
+            Cancelar
+          </button>
+        )}
+      </div>
     </form>
   )
 }
